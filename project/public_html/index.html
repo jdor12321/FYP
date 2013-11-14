@@ -1,16 +1,83 @@
 <!DOCTYPE html>
-<!--
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
--->
 <html>
-    <head>
-        <title>TODO supply a title</title>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width">
-    </head>
-    <body>
-        <div>TODO write content</div>
-    </body>
+	<head>
+		<meta charset="utf-8">
+		<title>Prototype</title>
+		<link rel="stylesheet" href="http://code.jquery.com/ui/1.9.1/themes/base/jquery-ui.css" />
+		<script src="http://code.jquery.com/jquery-1.8.2.js"></script>
+		<script src="http://code.jquery.com/ui/1.9.1/jquery-ui.js"></script>
+		<script type="text/javascript" src="js/jquery.gritter.js"></script>
+		<link rel="stylesheet" type="text/css" href="stylesheets/jquery.gritter.css" />
+		<script src="js/kineticjs4.2.0.js"></script>
+		<script src="js/jquery.js"></script>
+		<script src="js/kinetic.js"></script>
+		<script src="js/b64.js"></script>
+		<script src="js/LZWEncoder.js"></script>
+		<script src="js/NeuQuant.js"></script>
+		<script src="js/GIFEncoder.js"></script>
+		<link rel="stylesheet" href="stylesheets/prototype.css" />
+	</head>
+	<body>
+            <img id="banner" alt="ucc crest" src="images/draft1.png" align="left"/>
+	    <div id="pageSize">
+            <div id="container"></div>
+          
+            <div id="accordion">
+	          <h3>Set Background Image</h3>
+    		    <div>
+		        <input type="file" name="img" id="uploadbkimage"/>
+		        <button type="button" id="bgImg">Make background</button>
+    		    </div>
+	          <h3>Add Images</h3>
+    		    <div>
+		        <input type="file" name="img" id="uploadimage" />
+		        <button type="button" id="addImg">Add to Canvas</button>
+    		    </div>
+	          <h3>Image Layers</h3>
+		        <div>
+		          <ul id="sortable">
+		          </ul>
+		        </div>
+	          <h3>Canvas Adjustments</h3> 
+		        <div>
+		          <button id="up">
+                            Reset Animation
+		          </button>
+		        </div>
+	          <h3>Usage Tips</h3>
+		        <div>
+                    <ol id="tips">
+                        <li>Use .png images with a transparent background to get best animation results. </li>
+                        <li>Click image layer in "Image Layers" tab to make layer transparent and repeat to return visibility.</li>
+                        <li>Drag the image layers vertically in "Image Layers" to change layer order. </li>
+						<li>Store each point in your animation by clicking "Add Keyframe". </li>
+						<li>Set your frames per second using the drop down menu in the "Save Animation" tab. </li>
+						<li>Create your animated gif file by clicking "Create Animated Gif" in the "Save Animation" tab. </li>
+                    </ol>
+		        </div>
+	          <h3>Save Animation</h3>
+		        <div>
+				  <label id="fpsLabel">Frames Per Second:</label>
+				  <select id="fps">
+                    <option>8</option>
+                    <option>7</option>
+                    <option>6</option>
+					<option>5</option>
+					<option>4</option>
+					<option>3</option>
+					<option>2</option>
+					<option>1</option>
+				  </select>
+				  <button type="button" id="gif">Create Animated Gif</button>
+		        </div>
+            </div>
+            <ol id="time"><li>0</li><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li><li>6</li><li>7</li><li>8</li><li>9</li><li>10</li></ol>
+            <input type="text" id="amountHidden"/>
+            <div id="slider-range-max"></div>
+            <div id="keyframeDiv"><input type="submit" value="Add Keyframe" id="keyframe" onclick="storeTimeline()"/>
+			</div>
+	    </div>
+        <canvas id="gifOutput" width="900" height="500"></canvas>
+        <div id="overlay"><img id="loading" src="images/loading.gif" alt="loading..." /></div>
+     </body>
 </html>

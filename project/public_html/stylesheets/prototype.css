@@ -1,5 +1,5 @@
 body{
-    background-image:url('images/backdrop.jpg');
+    background-image:url('../images/backdrop.jpg');
     background-size: 100% 100%;
     background-position:center;
     background-repeat: repeat;
@@ -144,27 +144,27 @@ body{
     background: rgba(0, 128, 128, 0.8);
 }
 .wand {
-    background-image: url("images/magic.png") !important;
+    background-image: url("../images/magic.png") !important;
     width:20px;
     height:20px;  
 }
 .broom {
-    background-image: url("images/broom.png") !important;
+    background-image: url("../images/broom.png") !important;
     width:20px;
     height:20px;  
 }
 .imac {
-    background-image: url("images/display2.png") !important;
+    background-image: url("../images/display2.png") !important;
     width:20px;
     height:20px;  
 }
 .lens {
-    background-image: url("images/photos.png") !important;
+    background-image: url("../images/photos.png") !important;
     width:20px;
     height:20px;  
 }
 .picture {
-    background-image: url("images/Pictures.png") !important;
+    background-image: url("../images/Pictures.png") !important;
     width:20px;
     height:20px;  
 }
