@@ -13,8 +13,8 @@ $(document).ready(function () {
 
     var stage = new Kinetic.Stage({
         container: 'container',
-        width: 900,
-        height: 500
+        width: 1000,
+        height: 600
     });
 
     $('#addImg').on('click', function () {
@@ -66,9 +66,10 @@ $(document).ready(function () {
             stop = true;
         }
     });
-    window.onbeforeunload = function () {
+    //Alert window when refreshing page. commented out for the moment during developement
+   /* window.onbeforeunload = function () {
         return "Woah! Are you sure you want to do this? You will lose your animation...";
-    };
+    };*/
 
 });
 
@@ -132,8 +133,8 @@ function addImage(stage){
         stage.add(layer);
         layer.draw();
     
-    } 
-      
+    }; 
+    
     var imageObject = new newImage(src, name, stage, layer);
     allImages[allImages.length] = imageObject;
     var layerID = allImages.length -1;
@@ -149,7 +150,7 @@ function setBgImage(canvas){
     imageObj.src = src;
     backgroundImageUrl = src;
     
-    $("#container div").css({"background": "url(" + src +")", "background-size" : "900px 500px"});
+    $("#container div").css({"background": "url(" + src +")", "background-size" : "1000px 600px"});
     $("uploadbkimage").val("");
 }
 
@@ -465,7 +466,7 @@ function saveGif(){
                   var difference = i;
               }
               imageObj.src = backgroundImageUrl;
-              ctx.drawImage(imageObj, 0, 0, 900, 500); //set background on canvas
+              ctx.drawImage(imageObj, 0, 0, 1000, 600); //set background on canvas
 
               if (i > 0) {  //call tweening on this and previous frame
                   tween(timeline[i], timeline[number], difference);
@@ -487,8 +488,8 @@ function saveGif(){
                           }
                       }
                       encoder.addFrame(ctx);
-                      ctx.clearRect(0, 0, 900, 500);
-                      ctx.drawImage(imageObj, 0, 0, 900, 500);
+                      ctx.clearRect(0, 0, 1000, 600);
+                      ctx.drawImage(imageObj, 0, 0, 1000, 600);
                   }
               }
               // ctx.drawImage(imageObj,0,0,300,150);*/
@@ -513,7 +514,7 @@ function saveGif(){
               //add context as frame to gif encoder
               encoder.addFrame(ctx);
               //clear context for next frame
-              ctx.clearRect(0, 0, 900, 500);
+              ctx.clearRect(0, 0, 1000, 600);
           }
 
       }

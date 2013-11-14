@@ -1,5 +1,5 @@
 body{
-    background-image:url('../images/backdrop.jpg');
+    background-image:url('../images/background2.jpg');
     background-size: 100% 100%;
     background-position:center;
     background-repeat: repeat;
@@ -9,10 +9,10 @@ body{
     width: 1500px;
 }
 #accordion{
-    width:400px;
+    width:425px;
     float:right;
-    margin-right: 80px;
-    margin-top: -500px;
+    margin-right: -20px;
+    margin-top: -600px;
 }
 #accordion div{
     background: rgba(153, 123, 89, 0.2);
@@ -22,7 +22,7 @@ body{
     display: none;
 }
 #slider-range-max{
-    width:900px;
+    width:1000px;
     margin-left: 49px;
     margin-top: -15px;
 }
@@ -55,11 +55,11 @@ body{
     font-size: 12pt;
 }
 #container{
-    margin-top: 50px;
+    margin-top: 30px;
     margin-left: 50px;
     border:solid 1px #ccc;
-    width: 900px;
-    height: 500px;
+    width: 1000px;
+    height: 600px;
     background: rgba(0, 0, 0, 0.9);
 }
 #keyframeDiv{
@@ -76,16 +76,16 @@ body{
     border-radius: 4px;
 }
 #gifOutput{
-    width: 900px;
-    height: 500px;
-    margin-top: 50px;
+    width: 1000px;
+    height: 600px;
+    margin-top: 30px;
 }
 
 #banner{
     display: block;
-    margin: 0 auto;
+    margin-left : 50px;
     margin-top: 50px;
-    margin-bottom: 60px;
+    margin-bottom: 20px;
 }
 
 #time{
@@ -97,7 +97,7 @@ body{
     display: inline;
     background-color: rgba(153, 123, 89, 0.1);
     font-size: xx-large;
-    padding-right: 73px; 
+    padding-right: 94px; 
     padding-bottom: 16px;
     padding-top: 5px;
     border-top: solid 1px;
@@ -114,7 +114,7 @@ body{
     border-bottom-color: rgba(153, 123, 89, 0.3);
 }
 
-#time li:first-child{
+/*#time li:first-child{
     padding-left: 4px; 
     padding-right: 60px;
     border-left: solid 1px;
@@ -125,7 +125,10 @@ body{
     padding-right: 74px;
 }
 #time li:nth-child(7){
-    padding-right: 74px;
+    padding-right: 70px;
+}
+#time li:nth-child(6){
+    padding-right: 80px;
 }
 #time li:nth-child(2){
     padding-right: 77px;
@@ -139,7 +142,7 @@ body{
     border-top: solid 1px;
     border-bottom: solid 1px;
     border-color: rgba(153, 123, 89, 0.3);
-}
+}*/
 .ui-slider .ui-slider-handle{
     background: rgba(0, 128, 128, 0.8);
 }
