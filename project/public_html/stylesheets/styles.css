@@ -108,33 +108,42 @@ body{
 
 #time li:last-child{
     padding-right: 3px;
-    margin-left: -37px;
+    margin-left: -30px;
     background-color: rgba(0, 0, 0, 0);
     border-top-color: rgba(0, 0, 0, 0);
     border-bottom-color: rgba(153, 123, 89, 0.3);
 }
 
-/*#time li:first-child{
+#time li:first-child{
     padding-left: 4px; 
-    padding-right: 60px;
+    padding-right: 72px;
     border-left: solid 1px;
     border-color: rgba(153, 123, 89, 0.3);
 }
 
 #time li:nth-child(9){
-    padding-right: 74px;
+    padding-right: 85px;
 }
 #time li:nth-child(7){
-    padding-right: 70px;
+    padding-right: 85px;
 }
 #time li:nth-child(6){
     padding-right: 80px;
 }
+#time li:nth-child(4){
+    padding-right: 85px;
+}
+#time li:nth-child(5){
+    padding-right: 85px;
+}
 #time li:nth-child(2){
-    padding-right: 77px;
+    padding-right: 84px;
+}
+#time li:nth-child(3){
+    padding-right: 80px;
 }
 #time li:nth-child(8){
-    padding-right: 72px;
+    padding-right: 80px;
 }
 
 #time li:nth-child(10){
@@ -142,7 +151,8 @@ body{
     border-top: solid 1px;
     border-bottom: solid 1px;
     border-color: rgba(153, 123, 89, 0.3);
-}*/
+}
+
 .ui-slider .ui-slider-handle{
     background: rgba(0, 128, 128, 0.8);
 }
