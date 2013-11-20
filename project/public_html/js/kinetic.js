@@ -125,10 +125,11 @@ function addImage(stage){
         group.add(myImage);
         layer.add(group);
         
-        addAnchor(group, 0, 0, "topLeft");
-        addAnchor(group, imageObj.width /2, 0, "topRight");
-        addAnchor(group, imageObj.width /2, imageObj.height /2, "bottomRight");
-        addAnchor(group, 0, imageObj.height /2, "bottomLeft");
+        addAnchor(group, 0, 0, "topLeft", "#fff");
+        addAnchor(group, imageObj.width /2, 0, "topRight", "#fff");
+        addAnchor(group, imageObj.width /2, imageObj.height /2, "bottomRight", "#fff");
+        addAnchor(group, 0, imageObj.height /2, "bottomLeft", "#fff");
+        addAnchor(group, imageObj.width /4, imageObj.height /4, "centre", "#228B22");
         
         stage.add(layer);
         layer.draw();
@@ -142,7 +143,7 @@ function addImage(stage){
     $("uploadimage").val("");
 }
 
-function setBgImage(canvas){
+function setBgImage(){
     var imageObj = new Image();
     var f = document.getElementById('uploadbkimage').files[0];
     var url = window.URL;
@@ -167,8 +168,8 @@ function newImage(url, name, stage, layer) { //Image constructor function
 }
 
 function addLayers(layerName, layerId){  //creates layer UI
-    $("ul").append("<li onclick=\"visible(this.id)\" id=\"" + layerId + "\" class=\"ui-state-default\">\n\
-    <span class=\"ui-icon picture\"></span>" + "&nbsp;" + layerName + "</li>");
+    $("ul").append("<li id=\"" + layerId + "\" class=\"ui-state-default\" onclick=\"selected(this.id)\">\n\
+    <span class=\"ui-icon picture\"></span>" + "&nbsp;" + layerName + "</li><input id=\"checked\" name=\"checked\" onclick=\"visible("+ layerId +")\" type=\"checkbox\" checked>"+ layerName +" Visble?</input>");
 }
 
 function updateLayers(layerOrder){    //change the order of layers on canvas
@@ -262,7 +263,7 @@ function update(group, activeAnchor) {
         image.setSize(width, height);
     }
 }
-function addAnchor(group, x, y, name) {
+function addAnchor(group, x, y, name, color) {
     var stage = group.getStage();
     var layer = group.getLayer();
 
@@ -270,7 +271,7 @@ function addAnchor(group, x, y, name) {
         x: x,
         y: y,
         stroke: "#666",
-        fill: "#ddd",
+        fill: color,
         strokeWidth: 2,
         radius: 8,
         name: name,
@@ -306,6 +307,24 @@ function addAnchor(group, x, y, name) {
     group.add(anchor);
 }
 
+function selected(index) {
+    if(stop){
+        stop = false;
+        return;
+    }
+    
+    var count = 1;
+    var layer = allImages[index].imageLayer.getLayer();
+      if (count%2 == 0) {
+      $("#sortable").children().eq(index).css({"background": "#e5ddb0","border-color": "black" });
+      count++;
+      } else {
+      $("#sortable").children().eq(index).css({"background": "#E6E6E6", "border-color": "#D3D3D3"});
+      count++;
+  }
+  
+}
+
 function visible(index){
     if(stop){
         stop = false;
@@ -314,11 +333,13 @@ function visible(index){
     var layer = allImages[index].imageLayer.getLayer();
     if(layer.getVisible() == true){
       layer.hide();  
-      $("#sortable").children().eq(index).css({"background": "#e5ddb0","border-color": "black" });
+      //$("#sortable").children().eq(index).css({"background": "#e5ddb0","border-color": "black" });
+      //$("#sortable").children().eq(index).prop("checked", false);
     }
     else{
       layer.show();
-      $("#sortable").children().eq(index).css({"background": "#E6E6E6", "border-color": "#D3D3D3"});
+     //$("#sortable").children().eq(index).css({"background": "#E6E6E6", "border-color": "#D3D3D3"});
+     //$("#sortable").children().eq(index).prop("checked", false);
     }
 }
 
@@ -445,6 +466,7 @@ function saveGif(){
       ctx = gifCanvas.getContext("2d"); 
       
       var encoder = new GIFEncoder();
+      
       encoder.setRepeat(0); //auto-loop
       encoder.setDelay((1000 / fps));
       encoder.setDispose(2);
@@ -527,4 +549,10 @@ function saveGif(){
       var store = encoder.stream().getData();
       var data_url = 'data:image/gif;base64,'+encode64(store);
       window.open(data_url);
+}
+
+function saveGif(){
+     $("#mov").css({ "background": "#E6E6E6" });
+     $("#mov").button("option", "label", "Create Animated Gif");
+     $("#overlay").css({ "display": "none" });
 }
