@@ -25,6 +25,16 @@ $(document).ready(function() {
                     primary: "wand"
                 }
         });
+        $("#mov").button({
+                icons: {
+                    primary: "wand"
+                }
+        });
+         $("#rotateButton").button({
+                icons: {
+                    primary: "wand"
+                }
+        });
         $("#bgImg").button({
             icons: {
                 primary: "imac"

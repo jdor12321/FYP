@@ -16,9 +16,11 @@ $(document).ready(function () {
         width: 1000,
         height: 600
     });
+    
+  //  var rotate = $("#rotate").val();
 
     $('#addImg').on('click', function () {
-        addImage(stage);
+        addImage(stage, rotate);
     });
     $('#bgImg').on('click', function () {
         setBgImage();
@@ -94,6 +96,13 @@ function addImage(stage){
           strokeWidth: 10,
           name: "image",
           id: allImages.length
+        });
+        
+        //myImage.rotate(rotate*Math.PI/180);
+        
+        $("#rotateButton").click(function () {
+             myImage.rotate(rotate + rotate * Math.PI / 180);
+             layer.draw();
         });
         
         myImage.setStroke('clear');
@@ -272,8 +281,8 @@ function addAnchor(group, x, y, name, color) {
         y: y,
         stroke: "#666",
         fill: color,
-        strokeWidth: 2,
-        radius: 8,
+        strokeWidth: 1,
+        radius: 3,
         name: name,
         draggable: true
     });
@@ -312,15 +321,13 @@ function selected(index) {
         stop = false;
         return;
     }
-    
-    var count = 1;
     var layer = allImages[index].imageLayer.getLayer();
-      if (count%2 == 0) {
+      if (layer.getVisible() == true) {
       $("#sortable").children().eq(index).css({"background": "#e5ddb0","border-color": "black" });
-      count++;
+      
       } else {
       $("#sortable").children().eq(index).css({"background": "#E6E6E6", "border-color": "#D3D3D3"});
-      count++;
+      
   }
   
 }
@@ -551,7 +558,7 @@ function saveGif(){
       window.open(data_url);
 }
 
-function saveGif(){
+function saveMov(){
      $("#mov").css({ "background": "#E6E6E6" });
      $("#mov").button("option", "label", "Create Animated Gif");
      $("#overlay").css({ "display": "none" });
