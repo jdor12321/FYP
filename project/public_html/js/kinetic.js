@@ -16,11 +16,10 @@ $(document).ready(function () {
         width: 1000,
         height: 600
     });
-    
-  //  var rotate = $("#rotate").val();
+   
 
     $('#addImg').on('click', function () {
-        addImage(stage, rotate);
+        addImage(stage);
     });
     $('#bgImg').on('click', function () {
         setBgImage();
@@ -68,6 +67,7 @@ $(document).ready(function () {
             stop = true;
         }
     });
+    
     //Alert window when refreshing page. commented out for the moment during developement
    /* window.onbeforeunload = function () {
         return "Woah! Are you sure you want to do this? You will lose your animation...";
@@ -88,8 +88,8 @@ function addImage(stage){
     imageObj.onload = function() {
       var myImage = new Kinetic.Image({
           image: imageObj,
-          x: stage.getWidth,
-          y: stage.getHeight,
+          x: stage.getWidth, 
+          y: stage.getHeight, 
           width: imageObj.width / 2,
           height: imageObj.height / 2,
           stroke: 'black',
@@ -98,12 +98,8 @@ function addImage(stage){
           id: allImages.length
         });
         
-        //myImage.rotate(rotate*Math.PI/180);
         
-        $("#rotateButton").click(function () {
-             myImage.rotate(rotate + rotate * Math.PI / 180);
-             layer.draw();
-        });
+        
         
         myImage.setStroke('clear');
         
@@ -122,23 +118,26 @@ function addImage(stage){
                 document.body.style.cursor = "default";
         });
         
+       // var points = myImage.getPosition();
+        
         var group = new Kinetic.Group({
-            draggable: true,
             x: stage.width,
             y: stage.height,
             width: imageObj.width,
             height: imageObj.height,
-            name: 'group'
+            name: 'group',
+            draggable: true
         });
+        
         
         group.add(myImage);
         layer.add(group);
         
+        addAnchor(group, imageObj.width /4, imageObj.height /4, "centre", "#228B22");
         addAnchor(group, 0, 0, "topLeft", "#fff");
         addAnchor(group, imageObj.width /2, 0, "topRight", "#fff");
         addAnchor(group, imageObj.width /2, imageObj.height /2, "bottomRight", "#fff");
         addAnchor(group, 0, imageObj.height /2, "bottomLeft", "#fff");
-        addAnchor(group, imageObj.width /4, imageObj.height /4, "centre", "#228B22");
         
         stage.add(layer);
         layer.draw();
@@ -242,25 +241,40 @@ function update(group, activeAnchor) {
     var topRight = group.get(".topRight")[0];
     var bottomRight = group.get(".bottomRight")[0];
     var bottomLeft = group.get(".bottomLeft")[0];
+    var centre = group.get(".centre")[0];
     var image = group.get(".image")[0];
-
+    
+    var anchorX = activeAnchor.getX();
+    var anchorY = activeAnchor.getY();
+    
+    var width = group.getWidth();
+    var height = group.getHeight();
     // update anchor positions
     switch (activeAnchor.getName()) {
-        case "topLeft":
-            topRight.attrs.y = activeAnchor.attrs.y;
-            bottomLeft.attrs.x = activeAnchor.attrs.x;
-            break;
-        case "topRight":
-            topLeft.attrs.y = activeAnchor.attrs.y;
-            bottomRight.attrs.x = activeAnchor.attrs.x;
-            break;
-        case "bottomRight":
-            bottomLeft.attrs.y = activeAnchor.attrs.y;
-            topRight.attrs.x = activeAnchor.attrs.x;
-            break;
-        case "bottomLeft":
-            bottomRight.attrs.y = activeAnchor.attrs.y;
-            topLeft.attrs.x = activeAnchor.attrs.x;
+         case 'topLeft':
+              topRight.setY(anchorY);
+              bottomLeft.setX(anchorX);
+              centre.setX((bottomRight.getX));
+              centre.setY((bottomRight.getY));
+              break;
+              
+        case 'topRight':
+              topLeft.setY(anchorY);
+              bottomRight.setX(anchorX);
+              break;
+              
+        case 'bottomRight':
+              bottomLeft.setY(anchorY);
+              topRight.setX(anchorX);
+              break;
+              
+        case 'bottomLeft':
+              bottomRight.setY(anchorY);
+              topLeft.setX(anchorX);
+              break;
+              
+        case "centre":
+           // var points = group.getPosition();
             break;
     }
 
