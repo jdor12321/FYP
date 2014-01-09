@@ -98,6 +98,14 @@ function addImage(stage){
           id: allImages.length
         });
         
+        var line = new Kinetic.Line({
+        points: [,100,50,200],
+        stroke: 'black',
+        strokeWidth: 10,
+        lineCap: 'round',
+        lineJoin: 'round'
+        });
+        
         
         
         
@@ -131,9 +139,11 @@ function addImage(stage){
         
         
         group.add(myImage);
+        group.add(line);
         layer.add(group);
         
         addAnchor(group, imageObj.width /4, imageObj.height /4, "centre", "#228B22");
+        addAnchor(group, imageObj.width/1.25, imageObj.height/4, "rotate", "#5050E1");
         addAnchor(group, 0, 0, "topLeft", "#fff");
         addAnchor(group, imageObj.width /2, 0, "topRight", "#fff");
         addAnchor(group, imageObj.width /2, imageObj.height /2, "bottomRight", "#fff");
@@ -247,6 +257,9 @@ function update(group, activeAnchor) {
     var anchorX = activeAnchor.getX();
     var anchorY = activeAnchor.getY();
     
+    var centreX;
+    var centreY;
+
     var width = group.getWidth();
     var height = group.getHeight();
     // update anchor positions
@@ -254,27 +267,43 @@ function update(group, activeAnchor) {
          case 'topLeft':
               topRight.setY(anchorY);
               bottomLeft.setX(anchorX);
-              centre.setX((bottomRight.getX));
-              centre.setY((bottomRight.getY));
+              centreX = topLeft.getX()/2;
+              centreY = topLeft.getY()/2;
+              centre.setY(centreY);
+              centre.setX(centreX);
               break;
               
         case 'topRight':
               topLeft.setY(anchorY);
               bottomRight.setX(anchorX);
+              centreX = topRight.getX()/2;
+              centreY = topRight.getY()/2;
+              centre.setY(centreY);
+              centre.setX(centreX);
               break;
               
         case 'bottomRight':
               bottomLeft.setY(anchorY);
               topRight.setX(anchorX);
+              centreX = bottomRight.getX()/2;
+              centreY = bottomRight.getY()/2;
+              centre.setY(centreY);
+              centre.setX(centreX);
               break;
               
         case 'bottomLeft':
               bottomRight.setY(anchorY);
               topLeft.setX(anchorX);
+              centreY = bottomLeft.getY()/2;
+              //centreX = bottomLeft.getX();
+              centre.setX(centreX);
+              centre.setY(centreY);
+             // alert("X: " + centreX + ", Y: "+ centreY)
               break;
               
         case "centre":
-           // var points = group.getPosition();
+              centreX = anchorX;
+              centreY = anchorY;
             break;
     }
 
@@ -302,6 +331,8 @@ function addAnchor(group, x, y, name, color) {
     });
 
     anchor.on("dragmove", function() {
+//        var centreX = getCentreX(group);
+//        var centreY = getCentreY(group);
         update(group, this);
         layer.draw();
     });
@@ -362,6 +393,20 @@ function visible(index){
      //$("#sortable").children().eq(index).css({"background": "#E6E6E6", "border-color": "#D3D3D3"});
      //$("#sortable").children().eq(index).prop("checked", false);
     }
+}
+
+function getCentreX(group){
+    var centre = group.get(".centre")[0];
+    
+    var X = centre.getX();
+    return X;
+}
+
+function getCentreY(group){
+    var centre = group.get(".centre")[0];
+    
+    var Y = centre.getX();
+    return Y;
 }
 
 function storeTimeline(){
