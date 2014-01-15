@@ -8,6 +8,7 @@ var gifCanvas;
 var ctx;
 var fps;
 var stop = false;
+var i;
 
 $(document).ready(function () {
 
@@ -134,6 +135,8 @@ function addImage(stage){
             width: imageObj.width,
             height: imageObj.height,
             name: 'group',
+            offsetX:imageObj.width/4,
+            offsetY:imageObj.height/4,
             draggable: true
         });
         
@@ -158,6 +161,7 @@ function addImage(stage){
     allImages[allImages.length] = imageObject;
     var layerID = allImages.length -1;
     addLayers(name, layerID);
+    assignParents(name, layerID, allImages );
     $("uploadimage").val("");
 }
 
@@ -188,6 +192,11 @@ function newImage(url, name, stage, layer) { //Image constructor function
 function addLayers(layerName, layerId){  //creates layer UI
     $("ul").append("<li id=\"" + layerId + "\" class=\"ui-state-default\" onclick=\"selected(this.id)\">\n\
     <span class=\"ui-icon picture\"></span>" + "&nbsp;" + layerName + "</li><input id=\"checked\" name=\"checked\" onclick=\"visible("+ layerId +")\" type=\"checkbox\" checked>"+ layerName +" Visble?</input>");
+}
+
+function assignParents(layerName, layerId){  //creates layer UI
+    $("ol").append("<li id=\"" + layerId + "\" class=\"ui-state-default\" onclick=\"selected(this.id)\">\n\
+    <span class=\"ui-icon picture\"></span>" + "&nbsp;" + layerName + "</li> Parent: <select id=\"layers\"><option>"+layerName+"</option></input>");
 }
 
 function updateLayers(layerOrder){    //change the order of layers on canvas
@@ -252,6 +261,7 @@ function update(group, activeAnchor) {
     var bottomRight = group.get(".bottomRight")[0];
     var bottomLeft = group.get(".bottomLeft")[0];
     var centre = group.get(".centre")[0];
+    var rotate = group.get(".rotate")[0];
     var image = group.get(".image")[0];
     
     var anchorX = activeAnchor.getX();
@@ -269,8 +279,8 @@ function update(group, activeAnchor) {
               bottomLeft.setX(anchorX);
               centreX = topLeft.getX()/2;
               centreY = topLeft.getY()/2;
-              centre.setY(centreY);
-              centre.setX(centreX);
+             // centre.setY(centreY);
+             // centre.setX(centreX);
               break;
               
         case 'topRight':
@@ -278,8 +288,8 @@ function update(group, activeAnchor) {
               bottomRight.setX(anchorX);
               centreX = topRight.getX()/2;
               centreY = topRight.getY()/2;
-              centre.setY(centreY);
-              centre.setX(centreX);
+             // centre.setY(centreY);
+             // centre.setX(centreX);
               break;
               
         case 'bottomRight':
@@ -287,14 +297,14 @@ function update(group, activeAnchor) {
               topRight.setX(anchorX);
               centreX = bottomRight.getX()/2;
               centreY = bottomRight.getY()/2;
-              centre.setY(centreY);
-              centre.setX(centreX);
+             // centre.setY(centreY);
+             // centre.setX(centreX);
               break;
               
         case 'bottomLeft':
               bottomRight.setY(anchorY);
               topLeft.setX(anchorX);
-              centreY = bottomLeft.getY()/2;
+              //centreY = bottomLeft.getY()/2;
               //centreX = bottomLeft.getX();
               centre.setX(centreX);
               centre.setY(centreY);
@@ -302,9 +312,17 @@ function update(group, activeAnchor) {
               break;
               
         case "centre":
-              centreX = anchorX;
-              centreY = anchorY;
-            break;
+              var x = group.getOffsetX();
+              var y = group.getOffsetY();
+              group.setOffset((anchorX-x)/4, (anchorY-y)/4);
+              console.log("X: " + anchorX/4 + ", Y: " +anchorY /4);
+              break;
+            
+        case "rotate":
+            var groupPos = group.getPosition();
+              group.rotateDeg(10);
+              
+              break;
     }
 
     image.setPosition(topLeft.attrs.x, topLeft.attrs.y);
@@ -395,19 +413,6 @@ function visible(index){
     }
 }
 
-function getCentreX(group){
-    var centre = group.get(".centre")[0];
-    
-    var X = centre.getX();
-    return X;
-}
-
-function getCentreY(group){
-    var centre = group.get(".centre")[0];
-    
-    var Y = centre.getX();
-    return Y;
-}
 
 function storeTimeline(){
     var selection = $('#amountHidden').val();
