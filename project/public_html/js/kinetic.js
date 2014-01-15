@@ -99,30 +99,24 @@ function addImage(stage){
           id: allImages.length
         });
         
-        var line = new Kinetic.Line({
-        points: [,100,50,200],
-        stroke: 'black',
-        strokeWidth: 10,
-        lineCap: 'round',
-        lineJoin: 'round'
-        });
-        
-        
         
         
         myImage.setStroke('clear');
         
         myImage.on("dragstart", function(){
             this.moveToTop();
+            line.moveToTop();
             stage.draw();
         });
         myImage.on("mouseover", function(){
             this.setStroke('black');
+            line.setStroke('black');
             stage.draw();
             document.body.style.cursor = "pointer";
         });
         myImage.on("mouseout", function(){
                 this.setStroke('clear');
+                line.setStroke('clear');
                 stage.draw();
                 document.body.style.cursor = "default";
         });
