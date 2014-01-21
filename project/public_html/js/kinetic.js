@@ -129,22 +129,28 @@ function addImage(stage){
             width: imageObj.width,
             height: imageObj.height,
             name: 'group',
-            offsetX:imageObj.width/4,
-            offsetY:imageObj.height/4,
+            //offsetX:imageObj.width/4,
+            //offsetY:imageObj.height/4,
+            scale: 1,
             draggable: true
         });
         
         
         group.add(myImage);
-        group.add(line);
+        
         layer.add(group);
         
+       
         addAnchor(group, imageObj.width /4, imageObj.height /4, "centre", "#228B22");
         addAnchor(group, imageObj.width/1.25, imageObj.height/4, "rotate", "#5050E1");
         addAnchor(group, 0, 0, "topLeft", "#fff");
         addAnchor(group, imageObj.width /2, 0, "topRight", "#fff");
         addAnchor(group, imageObj.width /2, imageObj.height /2, "bottomRight", "#fff");
         addAnchor(group, 0, imageObj.height /2, "bottomLeft", "#fff");
+        
+         //sets the centre of the image
+        
+        group.setOffset (myImage.getWidth() * myImage.getScale().x / 2, myImage.getHeight() * myImage.getScale().y / 2);
         
         stage.add(layer);
         layer.draw();
@@ -249,7 +255,7 @@ function resetSortableIds(){
     }
 }
 
-function update(group, activeAnchor) {
+function update(group, activeAnchor, layer) {
     var topLeft = group.get(".topLeft")[0];
     var topRight = group.get(".topRight")[0];
     var bottomRight = group.get(".bottomRight")[0];
@@ -313,8 +319,12 @@ function update(group, activeAnchor) {
               break;
             
         case "rotate":
-            var groupPos = group.getPosition();
-              group.rotateDeg(10);
+           
+               
+    var groupPos = group.getPosition();
+    var rotation = degrees (angle (groupPos.x, groupPos.y, anchorX, anchorY));
+    
+    group.setRotationDeg(rotation);
               
               break;
     }
@@ -345,7 +355,7 @@ function addAnchor(group, x, y, name, color) {
     anchor.on("dragmove", function() {
 //        var centreX = getCentreX(group);
 //        var centreY = getCentreY(group);
-        update(group, this);
+        update(group, this, layer);
         layer.draw();
     });
     anchor.on("mousedown touchstart", function() {
@@ -620,4 +630,25 @@ function saveMov(){
      $("#mov").css({ "background": "#E6E6E6" });
      $("#mov").button("option", "label", "Create Animated Gif");
      $("#overlay").css({ "display": "none" });
+}
+
+//conmvert degrees to radians
+function radians (degrees) {
+    return degrees * (Math.PI/180)
+}
+//convert radians to degrees
+function degrees (radians) {
+    return radians * (180/Math.PI)
+}
+
+//calculate the angle between two points
+function angle (cx, cy, px, py) {
+    var x = cx - px; 
+    var y = cy - py; 
+    
+    return Math.atan2 (-y, -x)
+}
+
+function distance (p1x, p1y, p2x, p2y) {
+    return Math.sqrt (Math.pow ((p2x - p1x), 2) + Math.pow ((p2y - p1y), 2))
 }
