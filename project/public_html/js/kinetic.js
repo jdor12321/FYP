@@ -4,11 +4,13 @@ var timeline = new Array();
 var tweenedFrames = new Array();
 var imageData = {};
 var set = new Array();
+var images = new Array();
 var gifCanvas;
 var ctx;
 var fps;
 var stop = false;
 var i;
+var count = 0;
 
 $(document).ready(function () {
 
@@ -105,18 +107,15 @@ function addImage(stage){
         
         myImage.on("dragstart", function(){
             this.moveToTop();
-            line.moveToTop();
             stage.draw();
         });
         myImage.on("mouseover", function(){
             this.setStroke('black');
-            line.setStroke('black');
             stage.draw();
             document.body.style.cursor = "pointer";
         });
         myImage.on("mouseout", function(){
                 this.setStroke('clear');
-                line.setStroke('clear');
                 stage.draw();
                 document.body.style.cursor = "default";
         });
@@ -124,25 +123,42 @@ function addImage(stage){
        // var points = myImage.getPosition();
         
         var group = new Kinetic.Group({
-            x: stage.width,
-            y: stage.height,
+            x: imageObj.width/4,
+            y: imageObj.height/4,
             width: imageObj.width,
             height: imageObj.height,
             name: 'group',
-            //offsetX:imageObj.width/4,
-            //offsetY:imageObj.height/4,
             scale: 1,
             draggable: true
         });
         
+        var rotate = new Kinetic.Circle({
+            x: imageObj.width/1.25,
+            y: imageObj.height/4,
+            radius: 3,
+            fill: "#5050E1",
+            stroke: "#666",
+            strokeWidth: 1,
+            draggable : true
+        });
+        
         
         group.add(myImage);
-        
+        group.add(rotate);
         layer.add(group);
+        
+        rotate.setDragBoundFunc (function (pos) {
+           var groupPos = group.getPosition();
+           var rotation = degrees (angle (groupPos.x, groupPos.y, pos.x, pos.y));
+           group.setRotationDeg (rotation);
+    
+           layer.draw();
+           return pos;
+        });
         
        
         addAnchor(group, imageObj.width /4, imageObj.height /4, "centre", "#228B22");
-        addAnchor(group, imageObj.width/1.25, imageObj.height/4, "rotate", "#5050E1");
+        //addAnchor(group, imageObj.width/1.25, imageObj.height/4, "rotate", "#5050E1");
         addAnchor(group, 0, 0, "topLeft", "#fff");
         addAnchor(group, imageObj.width /2, 0, "topRight", "#fff");
         addAnchor(group, imageObj.width /2, imageObj.height /2, "bottomRight", "#fff");
@@ -151,7 +167,7 @@ function addImage(stage){
          //sets the centre of the image
         
         group.setOffset (myImage.getWidth() * myImage.getScale().x / 2, myImage.getHeight() * myImage.getScale().y / 2);
-        
+
         stage.add(layer);
         layer.draw();
     
@@ -161,7 +177,7 @@ function addImage(stage){
     allImages[allImages.length] = imageObject;
     var layerID = allImages.length -1;
     addLayers(name, layerID);
-    assignParents(name, layerID, allImages );
+    assignParents(name, layerID, allImages);
     $("uploadimage").val("");
 }
 
@@ -194,10 +210,26 @@ function addLayers(layerName, layerId){  //creates layer UI
     <span class=\"ui-icon picture\"></span>" + "&nbsp;" + layerName + "</li><input id=\"checked\" name=\"checked\" onclick=\"visible("+ layerId +")\" type=\"checkbox\" checked>"+ layerName +" Visble?</input>");
 }
 
-function assignParents(layerName, layerId){  //creates layer UI
-    $("ol").append("<li id=\"" + layerId + "\" class=\"ui-state-default\" onclick=\"selected(this.id)\">\n\
-    <span class=\"ui-icon picture\"></span>" + "&nbsp;" + layerName + "</li> Parent: <select id=\"layers\"><option>"+layerName+"</option></input>");
+function assignParents(layerName, layerId, allImages){  //creates layer UI
+    $("#parents").append("<li id=\"" + layerId + "\" class=\"ui-state-default\" onclick=\"selected(this.id)\">\n\
+    <span class=\"ui-icon picture\"></span>" + "&nbsp;" + layerName + "</li> Parent: <select class=\"layersList\"></input>");
+    
+    populateList(layerId, layerName, images);
 }
+
+function populateList(layerId, layerName) {
+
+images[layerId] = layerName;
+
+for (var i = 0; i <= images.length; i++){
+    for (var j = 0; j < images.length; j++){
+  var list = document.getElementsByClassName('layersList')[i];
+  list.options[j] = new Option(images[j], j);
+}
+}
+  
+}
+
 
 function updateLayers(layerOrder){    //change the order of layers on canvas
     var myLayer;
@@ -255,13 +287,12 @@ function resetSortableIds(){
     }
 }
 
-function update(group, activeAnchor, layer) {
+function update(group, activeAnchor) {
     var topLeft = group.get(".topLeft")[0];
     var topRight = group.get(".topRight")[0];
     var bottomRight = group.get(".bottomRight")[0];
     var bottomLeft = group.get(".bottomLeft")[0];
     var centre = group.get(".centre")[0];
-    var rotate = group.get(".rotate")[0];
     var image = group.get(".image")[0];
     
     var anchorX = activeAnchor.getX();
@@ -295,10 +326,8 @@ function update(group, activeAnchor, layer) {
         case 'bottomRight':
               bottomLeft.setY(anchorY);
               topRight.setX(anchorX);
-              centreX = bottomRight.getX()/2;
-              centreY = bottomRight.getY()/2;
-             // centre.setY(centreY);
-             // centre.setX(centreX);
+              centre.setY(centreY);
+              centre.setX(centreX);
               break;
               
         case 'bottomLeft':
@@ -308,26 +337,13 @@ function update(group, activeAnchor, layer) {
               //centreX = bottomLeft.getX();
               centre.setX(centreX);
               centre.setY(centreY);
-             // alert("X: " + centreX + ", Y: "+ centreY)
               break;
               
         case "centre":
-              var x = group.getOffsetX();
-              var y = group.getOffsetY();
-              group.setOffset((anchorX-x)/4, (anchorY-y)/4);
-              console.log("X: " + anchorX/4 + ", Y: " +anchorY /4);
-              break;
-            
-        case "rotate":
-           
-               
-    var groupPos = group.getPosition();
-    var rotation = degrees (angle (groupPos.x, groupPos.y, anchorX, anchorY));
-    
-    group.setRotationDeg(rotation);
-              
-              break;
-    }
+              //var x = group.getOffsetX();
+              //var y = group.getOffsetY();
+              group.setOffset(anchorX, anchorY);
+      }
 
     image.setPosition(topLeft.attrs.x, topLeft.attrs.y);
 
