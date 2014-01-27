@@ -35,5 +35,11 @@ $(document).ready(function() {
                 primary: "lens"
             }
         });
+        
+        $("#saveParents").button({
+            icons: {
+                primary: "lens"
+            }
+        });
 });
 

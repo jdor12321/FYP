@@ -19,7 +19,6 @@ $(document).ready(function () {
         width: 1000,
         height: 600
     });
-   
 
     $('#addImg').on('click', function () {
         addImage(stage);
@@ -69,6 +68,25 @@ $(document).ready(function () {
             updateLayers(layerArray);
             stop = true;
         }
+    });
+    
+    $('#saveParents').on('click', function () {
+       saveParents(); 
+       
+       $.extend($.gritter.options, {
+		    class_name: 'gritter-light', // for light notifications (can be added directly to $.gritter.add too)
+		    position: 'top-left', // possibilities: bottom-left, bottom-right, top-left, top-right
+                    fade_in_speed: 0, // how fast notifications fade in (string or int)
+                    fade_out_speed: 500, // how fast the notices fade out
+                    time: 1000 // hang on the screen for...
+        });
+        $.gritter.add({
+                // (string | mandatory) the heading of the notification
+                title: 'Parents Saved',
+                // (string | mandatory) the text inside the notification
+                text: 'The parents you have selected have now been saved'
+        });
+        
     });
     
     //Alert window when refreshing page. commented out for the moment during developement
@@ -132,6 +150,17 @@ function addImage(stage){
             draggable: true
         });
         
+        var group1 = new Kinetic.Group({
+            x: imageObj.width/4,
+            y: imageObj.height/4,
+            width: imageObj.width,
+            height: imageObj.height,
+            name: 'group1',
+            scale: 1,
+            draggable: true
+        });
+        
+        
         var rotate = new Kinetic.Circle({
             x: imageObj.width/1.25,
             y: imageObj.height/4,
@@ -155,6 +184,22 @@ function addImage(stage){
            layer.draw();
            return pos;
         });
+        
+        rotate.on ('dragend', function() {
+    // cf. http://stackoverflow.com/questions/3996687/how-do-i-only-allow-dragging-in-a-circular-path
+    var radius = group.getWidth() * group.getScale().x + 55, angle = group.getRotation(), groupPos = group.getPosition()
+    //controlGroup.setPosition ({
+    //  x: groupPos.x + radius * Math.cos (angle),
+    //  y: groupPos.y + radius * Math.sin (angle)})
+    rotate.transitionTo ({
+      x: groupPos.x + radius * Math.cos (angle),
+      y: groupPos.y + radius * Math.sin (angle),
+      duration: 0.2
+    });
+    // https://github.com/ericdrowell/KineticJS/issues/123
+    //line.transitionTo ({points: linePoints (57), duration: 1})
+    layer.draw();
+  });
         
        
         addAnchor(group, imageObj.width /4, imageObj.height /4, "centre", "#228B22");
@@ -206,8 +251,8 @@ function newImage(url, name, stage, layer) { //Image constructor function
 }
 
 function addLayers(layerName, layerId){  //creates layer UI
-    $("ul").append("<li id=\"" + layerId + "\" class=\"ui-state-default\" onclick=\"selected(this.id)\">\n\
-    <span class=\"ui-icon picture\"></span>" + "&nbsp;" + layerName + "</li><input id=\"checked\" name=\"checked\" onclick=\"visible("+ layerId +")\" type=\"checkbox\" checked>"+ layerName +" Visble?</input>");
+    $("ul").append("<li onclick=\"visible(this.id)\" id=\"" + layerId + "\" class=\"ui-state-default\">\n\
+    <span class=\"ui-icon picture\"></span>" + "&nbsp;" + layerName + "</li>");
 }
 
 function assignParents(layerName, layerId, allImages){  //creates layer UI
@@ -217,7 +262,7 @@ function assignParents(layerName, layerId, allImages){  //creates layer UI
     populateList(layerId, layerName, images);
 }
 
-function populateList(layerId, layerName) {
+function populateList(layerId, layerName, images) {
 
 images[layerId] = layerName;
 
@@ -298,8 +343,8 @@ function update(group, activeAnchor) {
     var anchorX = activeAnchor.getX();
     var anchorY = activeAnchor.getY();
     
-    var centreX;
-    var centreY;
+    var centreX = group.getOffsetX();
+    var centreY = group.getOffsetY();
 
     var width = group.getWidth();
     var height = group.getHeight();
@@ -326,8 +371,9 @@ function update(group, activeAnchor) {
         case 'bottomRight':
               bottomLeft.setY(anchorY);
               topRight.setX(anchorX);
-              centre.setY(centreY);
-              centre.setX(centreX);
+              centre.setY(centreX/anchorX);
+              centre.setX(centreY/anchorY);
+              group.setOffset(centreX/anchorX, centreY/anchorY);
               break;
               
         case 'bottomLeft':
@@ -340,9 +386,9 @@ function update(group, activeAnchor) {
               break;
               
         case "centre":
-              //var x = group.getOffsetX();
-              //var y = group.getOffsetY();
+              var absolute = group.getPosition();
               group.setOffset(anchorX, anchorY);
+              group.setPosition(absolute);
       }
 
     image.setPosition(topLeft.attrs.x, topLeft.attrs.y);
@@ -399,20 +445,20 @@ function addAnchor(group, x, y, name, color) {
     group.add(anchor);
 }
 
-function selected(index) {
+function visible(index){
     if(stop){
         stop = false;
         return;
     }
     var layer = allImages[index].imageLayer.getLayer();
-      if (layer.getVisible() == true) {
+    if(layer.getVisible() == true){
+      layer.hide();  
       $("#sortable").children().eq(index).css({"background": "#e5ddb0","border-color": "black" });
-      
-      } else {
+    }
+    else{
+      layer.show();
       $("#sortable").children().eq(index).css({"background": "#E6E6E6", "border-color": "#D3D3D3"});
-      
-  }
-  
+    }
 }
 
 function visible(index){
@@ -423,13 +469,13 @@ function visible(index){
     var layer = allImages[index].imageLayer.getLayer();
     if(layer.getVisible() == true){
       layer.hide();  
-      //$("#sortable").children().eq(index).css({"background": "#e5ddb0","border-color": "black" });
-      //$("#sortable").children().eq(index).prop("checked", false);
+      $("#sortable").children().eq(index).css({"background": "#e5ddb0","border-color": "black" });
+      $("#sortable").children().eq(index).prop("checked", false);
     }
     else{
       layer.show();
-     //$("#sortable").children().eq(index).css({"background": "#E6E6E6", "border-color": "#D3D3D3"});
-     //$("#sortable").children().eq(index).prop("checked", false);
+      $("#sortable").children().eq(index).css({"background": "#E6E6E6", "border-color": "#D3D3D3"});
+      $("#sortable").children().eq(index).prop("checked", false);
     }
 }
 
@@ -644,8 +690,16 @@ function saveGif(){
 
 function saveMov(){
      $("#mov").css({ "background": "#E6E6E6" });
-     $("#mov").button("option", "label", "Create Animated Gif");
+     $("#mov").button("option", "label", "Create Animated MOV");
      $("#overlay").css({ "display": "none" });
+}
+
+function saveParents() {
+    
+     $("#saveParents").css({ "background": "#E6E6E6" });
+     $("#saveParents").button("option", "label", "Save Parents");
+     $("#overlay").css({ "display": "none" });
+    
 }
 
 //conmvert degrees to radians
