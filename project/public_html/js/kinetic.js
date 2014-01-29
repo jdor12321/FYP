@@ -11,6 +11,7 @@ var fps;
 var stop = false;
 var i;
 var count = 0;
+var groups = new Array();
 
 $(document).ready(function () {
 
@@ -71,21 +72,21 @@ $(document).ready(function () {
     });
     
     $('#saveParents').on('click', function () {
-       saveParents(); 
-       
-       $.extend($.gritter.options, {
-		    class_name: 'gritter-light', // for light notifications (can be added directly to $.gritter.add too)
-		    position: 'top-left', // possibilities: bottom-left, bottom-right, top-left, top-right
-                    fade_in_speed: 0, // how fast notifications fade in (string or int)
-                    fade_out_speed: 500, // how fast the notices fade out
-                    time: 1000 // hang on the screen for...
-        });
-        $.gritter.add({
-                // (string | mandatory) the heading of the notification
-                title: 'Parents Saved',
-                // (string | mandatory) the text inside the notification
-                text: 'The parents you have selected have now been saved'
-        });
+        
+        // for loop
+        for (var i = 0; i <= allImages.length; i++) {
+        
+        var list = document.getElementsByClassName('layersList')[i];
+        
+        var parentLayerId = list.options[list.selectedIndex].value;
+        
+        var childLayerId = document.getElementById("parents").getElementsByTagName("li")[i].id;
+        
+        console.log(i);
+        
+        saveParents(parentLayerId, childLayerId, allImages); 
+        
+        }
         
     });
     
@@ -150,16 +151,6 @@ function addImage(stage){
             draggable: true
         });
         
-        var group1 = new Kinetic.Group({
-            x: imageObj.width/4,
-            y: imageObj.height/4,
-            width: imageObj.width,
-            height: imageObj.height,
-            name: 'group1',
-            scale: 1,
-            draggable: true
-        });
-        
         
         var rotate = new Kinetic.Circle({
             x: imageObj.width/1.25,
@@ -185,21 +176,7 @@ function addImage(stage){
            return pos;
         });
         
-        rotate.on ('dragend', function() {
-    // cf. http://stackoverflow.com/questions/3996687/how-do-i-only-allow-dragging-in-a-circular-path
-    var radius = group.getWidth() * group.getScale().x + 55, angle = group.getRotation(), groupPos = group.getPosition()
-    //controlGroup.setPosition ({
-    //  x: groupPos.x + radius * Math.cos (angle),
-    //  y: groupPos.y + radius * Math.sin (angle)})
-    rotate.transitionTo ({
-      x: groupPos.x + radius * Math.cos (angle),
-      y: groupPos.y + radius * Math.sin (angle),
-      duration: 0.2
-    });
-    // https://github.com/ericdrowell/KineticJS/issues/123
-    //line.transitionTo ({points: linePoints (57), duration: 1})
-    layer.draw();
-  });
+       
         
        
         addAnchor(group, imageObj.width /4, imageObj.height /4, "centre", "#228B22");
@@ -213,6 +190,8 @@ function addImage(stage){
         
         group.setOffset (myImage.getWidth() * myImage.getScale().x / 2, myImage.getHeight() * myImage.getScale().y / 2);
 
+        groups[allImages.length-1] = group;
+
         stage.add(layer);
         layer.draw();
     
@@ -222,7 +201,7 @@ function addImage(stage){
     allImages[allImages.length] = imageObject;
     var layerID = allImages.length -1;
     addLayers(name, layerID);
-    assignParents(name, layerID, allImages);
+    assignParents(name, layerID);
     $("uploadimage").val("");
 }
 
@@ -255,9 +234,9 @@ function addLayers(layerName, layerId){  //creates layer UI
     <span class=\"ui-icon picture\"></span>" + "&nbsp;" + layerName + "</li>");
 }
 
-function assignParents(layerName, layerId, allImages){  //creates layer UI
+function assignParents(layerName, layerId){  //creates layer UI
     $("#parents").append("<li id=\"" + layerId + "\" class=\"ui-state-default\" onclick=\"selected(this.id)\">\n\
-    <span class=\"ui-icon picture\"></span>" + "&nbsp;" + layerName + "</li> Parent: <select class=\"layersList\"></input>");
+    <span class=\"ui-icon picture\"></span>" + "&nbsp;" + layerName + "</li> Parent: <select class=\"layersList\"></select>");
     
     populateList(layerId, layerName, images);
 }
@@ -371,9 +350,9 @@ function update(group, activeAnchor) {
         case 'bottomRight':
               bottomLeft.setY(anchorY);
               topRight.setX(anchorX);
-              centre.setY(centreX/anchorX);
-              centre.setX(centreY/anchorY);
-              group.setOffset(centreX/anchorX, centreY/anchorY);
+              //centre.setY(centreX/anchorX);
+              //centre.setX(centreY/anchorY);
+              //group.setOffset(centreX/anchorX, centreY/anchorY);
               break;
               
         case 'bottomLeft':
@@ -415,8 +394,6 @@ function addAnchor(group, x, y, name, color) {
     });
 
     anchor.on("dragmove", function() {
-//        var centreX = getCentreX(group);
-//        var centreY = getCentreY(group);
         update(group, this, layer);
         layer.draw();
     });
@@ -458,24 +435,6 @@ function visible(index){
     else{
       layer.show();
       $("#sortable").children().eq(index).css({"background": "#E6E6E6", "border-color": "#D3D3D3"});
-    }
-}
-
-function visible(index){
-    if(stop){
-        stop = false;
-        return;
-    }
-    var layer = allImages[index].imageLayer.getLayer();
-    if(layer.getVisible() == true){
-      layer.hide();  
-      $("#sortable").children().eq(index).css({"background": "#e5ddb0","border-color": "black" });
-      $("#sortable").children().eq(index).prop("checked", false);
-    }
-    else{
-      layer.show();
-      $("#sortable").children().eq(index).css({"background": "#E6E6E6", "border-color": "#D3D3D3"});
-      $("#sortable").children().eq(index).prop("checked", false);
     }
 }
 
@@ -694,8 +653,44 @@ function saveMov(){
      $("#overlay").css({ "display": "none" });
 }
 
-function saveParents() {
+function saveParents(parent, child, allImages) {
     
+     var stage = allImages[parent].imageStage.getStage();
+    
+     var layer = new Kinetic.Layer();
+     
+     var parentImage = groups[parent];
+     var childImage = groups[child];
+     
+    // var parentStage = allImages[parent].imageStage.getStage();
+    // var childStage = allImages[child].imageStage.getStage();
+     
+     if (parent == child){
+         return;
+     }
+     
+     var group = new Kinetic.Group({
+            x: 500,
+            y: 500,
+            width: parentImage.width,
+            height: parentImage.height,
+            name: 'parentChildgroup',
+            scale: 1,
+            draggable:true
+        });
+        
+        group.add(childImage);
+        group.add(parentImage);
+        
+        layer.add(group);
+
+        stage.add(layer);
+        
+        layer.draw();
+              
+        
+      alert('Success');
+      
      $("#saveParents").css({ "background": "#E6E6E6" });
      $("#saveParents").button("option", "label", "Save Parents");
      $("#overlay").css({ "display": "none" });
