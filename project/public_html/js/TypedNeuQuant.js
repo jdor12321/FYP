@@ -21,10 +21,6 @@
  * (JavaScript port 2012 by Johan Nordberg)
  */
 
-function toInt(v) {
-  return ~~v;
-}
-
 var ncycles = 100; // number of learning cycles
 var netsize = 256; // number of colors used
 var maxnetpos = netsize - 1;
@@ -93,15 +89,16 @@ function NeuQuant(pixels, samplefac) {
   */
   function init() {
     network = [];
-    netindex = [];
-    bias = [];
-    freq = [];
-    radpower = [];
+    netindex = new Int32Array(256);
+    bias = new Int32Array(netsize);
+    freq = new Int32Array(netsize);
+    radpower = new Int32Array(netsize >> 3);
 
     var i, v;
     for (i = 0; i < netsize; i++) {
       v = (i << (netbiasshift + 8)) / netsize;
-      network[i] = [v, v, v];
+      network[i] = new Float64Array([v, v, v, 0]);
+      //network[i] = [v, v, v, 0]
       freq[i] = intbias / netsize;
       bias[i] = 0;
     }
@@ -319,9 +316,9 @@ function NeuQuant(pixels, samplefac) {
     var i;
 
     var lengthcount = pixels.length;
-    var alphadec = toInt(30 + ((samplefac - 1) / 3));
-    var samplepixels = toInt(lengthcount / (3 * samplefac));
-    var delta = toInt(samplepixels / ncycles);
+    var alphadec = 30 + ((samplefac - 1) / 3);
+    var samplepixels = lengthcount / (3 * samplefac);
+    var delta = ~~(samplepixels / ncycles);
     var alpha = initalpha;
     var radius = initradius;
 
@@ -329,7 +326,7 @@ function NeuQuant(pixels, samplefac) {
 
     if (rad <= 1) rad = 0;
     for (i = 0; i < rad; i++)
-      radpower[i] = toInt(alpha * (((rad * rad - i * i) * radbias) / (rad * rad)));
+      radpower[i] = alpha * (((rad * rad - i * i) * radbias) / (rad * rad));
 
     var step;
     if (lengthcount < minpicturebytes) {
@@ -372,7 +369,7 @@ function NeuQuant(pixels, samplefac) {
 
         if (rad <= 1) rad = 0;
         for (j = 0; j < rad; j++)
-          radpower[j] = toInt(alpha * (((rad * rad - j * j) * radbias) / (rad * rad)));
+          radpower[j] = alpha * (((rad * rad - j * j) * radbias) / (rad * rad));
       }
     }
   }

@@ -365,15 +365,17 @@ function update(group, activeAnchor) {
               break;
               
         case "centre":
-              var absolute = group.getPosition();
               group.setOffset(anchorX, anchorY);
-              group.setPosition(absolute);
       }
+    var offsetX = group.getOffsetX();
+    var offsetY = group.getOffsetY();
 
-    image.setPosition(topLeft.attrs.x, topLeft.attrs.y);
+    image.setPosition(topLeft.getX(), topLeft.getY());
 
-    var width = topRight.attrs.x - topLeft.attrs.x;
-    var height = bottomLeft.attrs.y - topLeft.attrs.y;
+    //image.setOffset(offsetX, offsetY);
+
+    var width = topRight.getX() - topLeft.getX();
+    var height = bottomLeft.getY() - topLeft.getY();
     if(width && height) {
         image.setSize(width, height);
     }
@@ -456,10 +458,11 @@ function storeTimeline(){
             
             if(isNaN(layer.children[0].children[0].getAbsolutePosition().y)){
                 imageData= {
-                    x: layer.children[0].attrs.x,
-                    y: layer.children[0].attrs.y,
-                    width: layer.children[0].children[0].attrs.width,
-                    height: layer.children[0].children[0].attrs.height,
+                    x: layer.children[0].getX(),
+                    y: layer.children[0].getY(),
+                    width: layer.children[0].children[0].getWidth(),
+                    height: layer.children[0].children[0].getHeight(),
+                    rotation: layer.children[0].children[0].getRotation(),
                     src: src,
                     visible: visible
                 };
@@ -468,8 +471,9 @@ function storeTimeline(){
                 imageData= {
                     x: layer.children[0].children[0].getAbsolutePosition().x,
                     y: layer.children[0].children[0].getAbsolutePosition().y,
-                    width: layer.children[0].children[0].attrs.width,
-                    height: layer.children[0].children[0].attrs.height,
+                    width: layer.children[0].children[0].getWidth(),
+                    height: layer.children[0].children[0].getHeight(),
+                    rotation: layer.children[0].children[0].getRotation(),
                     src: src,
                     visible: visible
                 };
@@ -523,6 +527,12 @@ function tween(frames, oldFrames, difference){   //retrieve current keyframe, ol
                 var height = oldFrames[i].height;
                 var nextHeight = frames[q].height;
                 var newHeight = Math.round((height + ((nextHeight - height) / framesNeeded)));
+                
+                //get oldFrame rotation and next user sets rotation, then calculate the new rotation for first tweened frame
+                var rotation = oldFrames[i].rotation;
+                var nextRotation = frames[q].rotation;
+                var newRotation = Math.round((rotation + ((nextRotation - rotation) / framesNeeded)));
+                
                 tweenedFrames[counter] = new Array();
                 for (var j = 0; j < framesNeeded - 1; j++) {
 
@@ -531,14 +541,17 @@ function tween(frames, oldFrames, difference){   //retrieve current keyframe, ol
                         y: newY,
                         width: newWidth,
                         height: newHeight,
+                        rotation: newRotation,
                         src: frames[q].src,
                         visible: oldFrames[i].visible
                     };
+                    
                     tweenedFrames[counter][j] = frame;
                     newX += Math.round((nextX - x) / framesNeeded);
                     newY += Math.round((nextY - y) / framesNeeded);
                     newWidth += Math.round((nextWidth - width) / framesNeeded);
                     newHeight += Math.round((nextHeight - height) / framesNeeded);
+                    newRotation += Math.round((nextRotation - rotation) /framesNeeded);
                 }
                 counter++;
             }
@@ -561,14 +574,22 @@ function saveGif(){
       gifCanvas = document.getElementById("gifOutput");
       ctx = gifCanvas.getContext("2d"); 
       
-      var encoder = new GIFEncoder();
+      var encoder = new GIF({
+          workers: 5,
+          workerScript: '/project/js/gif.worker.js',
+          quality: 10,
+          setRepeat: 0,
+          width: 1000,
+          height: 600
+          
+      });
       
-      encoder.setRepeat(0); //auto-loop
-      encoder.setDelay((1000 / fps));
-      encoder.setDispose(2);
+      //encoder.setRepeat(0); //auto-loop
+     // encoder.setDelay((1000 / fps));
+      //encoder.setDispose(2);
       //set gif quality
-      encoder.setQuality(10);
-      encoder.start();
+      //encoder.setQuality(10);
+      //encoder.start();
 
       for (var i = 0; i < timeline.length; i++) { //outer loop timeline entries
 
@@ -582,7 +603,7 @@ function saveGif(){
                   set.push(i);
                   var number = i;
                   var difference = i;
-              }
+              }     
               imageObj.src = backgroundImageUrl;
               ctx.drawImage(imageObj, 0, 0, 1000, 600); //set background on canvas
 
@@ -605,7 +626,7 @@ function saveGif(){
                             ctx.drawImage(imgObj, nx, ny, nWidth, nHeight);
                           }
                       }
-                      encoder.addFrame(ctx);
+                      encoder.addFrame(ctx, {delay:1000 / fps,copy: true});
                       ctx.clearRect(0, 0, 1000, 600);
                       ctx.drawImage(imageObj, 0, 0, 1000, 600);
                   }
@@ -630,21 +651,30 @@ function saveGif(){
 
 
               //add context as frame to gif encoder
-              encoder.addFrame(ctx);
+              encoder.addFrame(ctx, {delay:1000 / fps, copy: true});
               //clear context for next frame
               ctx.clearRect(0, 0, 1000, 600);
+              
+             
           }
 
       }
       
-      encoder.finish();
-      $("#gif").css({ "background": "#E6E6E6" });
-      $("#gif").button("option", "label", "Create Animated Gif");
-      $("#overlay").css({ "display": "none" });
+       encoder.on('finished', function(blob) {
+              window.open(URL.createObjectURL(blob));
+              $("#gif").css({ "background": "#E6E6E6" });
+              $("#gif").button("option", "label", "Create Animated Gif");
+              $("#overlay").css({ "display": "none" });
+            });
 
-      var store = encoder.stream().getData();
-      var data_url = 'data:image/gif;base64,'+encode64(store);
-      window.open(data_url);
+       encoder.render();
+      
+      //encoder.finish();
+      
+
+      //var store = encoder.stream().getData();
+      //var data_url = 'data:image/gif;base64,'+encode64(store);
+      //window.open(data_url);
 }
 
 function saveMov(){
@@ -669,20 +699,10 @@ function saveParents(parent, child, allImages) {
          return;
      }
      
-     var group = new Kinetic.Group({
-            x: 500,
-            y: 500,
-            width: parentImage.width,
-            height: parentImage.height,
-            name: 'parentChildgroup',
-            scale: 1,
-            draggable:true
-        });
         
-        group.add(childImage);
-        group.add(parentImage);
-        
-        layer.add(group);
+        parentImage.add(childImage);
+               
+        layer.add(parentImage);
 
         stage.add(layer);
         
@@ -692,8 +712,6 @@ function saveParents(parent, child, allImages) {
       alert('Success');
       
      $("#saveParents").css({ "background": "#E6E6E6" });
-     $("#saveParents").button("option", "label", "Save Parents");
-     $("#overlay").css({ "display": "none" });
     
 }
 
