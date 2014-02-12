@@ -167,6 +167,8 @@ function addImage(stage){
         group.add(rotate);
         layer.add(group);
         
+        
+        
         rotate.setDragBoundFunc (function (pos) {
            var groupPos = group.getPosition();
            var rotation = degrees (angle (groupPos.x, groupPos.y, pos.x, pos.y));
@@ -194,6 +196,15 @@ function addImage(stage){
 
         stage.add(layer);
         layer.draw();
+        
+        rotate.on("dragstart", function(){
+            var pos = rotate.getPosition();
+            console.log("start x: " + pos.x + " start y: " + pos.y + " ");
+        });
+        rotate.on("dragend", function(){
+            var pos = rotate.getPosition();
+            console.log("end x: " + pos.x + " end y: " + pos.y + " ");
+        });
     
     }; 
     
@@ -332,8 +343,10 @@ function update(group, activeAnchor) {
          case 'topLeft':
               topRight.setY(anchorY);
               bottomLeft.setX(anchorX);
-              centreX = topLeft.getX()/2;
-              centreY = topLeft.getY()/2;
+              centreX = anchorX/2;
+              centreY = anchorY/2;
+              centre.setX(centreX);
+              centre.setY(centreY);
              // centre.setY(centreY);
              // centre.setX(centreX);
               break;
@@ -341,8 +354,10 @@ function update(group, activeAnchor) {
         case 'topRight':
               topLeft.setY(anchorY);
               bottomRight.setX(anchorX);
-              centreX = topRight.getX()/2;
-              centreY = topRight.getY()/2;
+              centreX = anchorX/2;
+              centreY = anchorY/2;
+              centre.setX(centreX);
+              centre.setY(centreY);
              // centre.setY(centreY);
              // centre.setX(centreX);
               break;
@@ -350,6 +365,10 @@ function update(group, activeAnchor) {
         case 'bottomRight':
               bottomLeft.setY(anchorY);
               topRight.setX(anchorX);
+              centreX = anchorX/2;
+              centreY = anchorY/2;
+              centre.setX(centreX);
+              centre.setY(centreY);
               //centre.setY(centreX/anchorX);
               //centre.setX(centreY/anchorY);
               //group.setOffset(centreX/anchorX, centreY/anchorY);
@@ -358,19 +377,33 @@ function update(group, activeAnchor) {
         case 'bottomLeft':
               bottomRight.setY(anchorY);
               topLeft.setX(anchorX);
-              //centreY = bottomLeft.getY()/2;
-              //centreX = bottomLeft.getX();
+              centreY = (topRight.getY() - bottomRight.getY())/2;
+              centreX = (topRight.getX() - topLeft.getX())/2;
               centre.setX(centreX);
               centre.setY(centreY);
               break;
               
         case "centre":
-              group.setOffset(anchorX, anchorY);
+            centre.on("dragmove", function(){
+                group.setDraggable(false);
+              });
+              var absolute = group.getPosition();
+              group.setOffset({x:anchorX, y:anchorY});
+              
+              centre.on("dragend", function(){
+                group.setDraggable(true);
+                //group.setPosition({x:absolute.x + group.getOffsetX(), y:absolute.y + group.getOffsetY()});
+              });
+              
       }
+      
+      activeAnchor.on("dragend", function(){
+     //           group.setOffset(anchorX/2, anchorY/2);
+              });
     var offsetX = group.getOffsetX();
     var offsetY = group.getOffsetY();
 
-    image.setPosition(topLeft.getX(), topLeft.getY());
+    image.setPosition({x:topLeft.getX(), y:topLeft.getY()});
 
     //image.setOffset(offsetX, offsetY);
 
@@ -441,7 +474,7 @@ function visible(index){
 }
 
 
-function storeTimeline(){
+function storeTimeline(group){
     var selection = $('#amountHidden').val();
     
     if(selection != null){
@@ -456,13 +489,15 @@ function storeTimeline(){
             var src = allImages[i].imageLink;
             var visible = allImages[i].imageLayer.getVisible();
             
+            console.log(layer.children[0].getRotationDeg());
+            
             if(isNaN(layer.children[0].children[0].getAbsolutePosition().y)){
                 imageData= {
                     x: layer.children[0].getX(),
                     y: layer.children[0].getY(),
                     width: layer.children[0].children[0].getWidth(),
                     height: layer.children[0].children[0].getHeight(),
-                    rotation: layer.children[0].children[0].getRotation(),
+                    rotation: layer.children[0].getRotationDeg(),
                     src: src,
                     visible: visible
                 };
@@ -473,7 +508,7 @@ function storeTimeline(){
                     y: layer.children[0].children[0].getAbsolutePosition().y,
                     width: layer.children[0].children[0].getWidth(),
                     height: layer.children[0].children[0].getHeight(),
-                    rotation: layer.children[0].children[0].getRotation(),
+                    rotation: layer.children[0].getRotationDeg(),
                     src: src,
                     visible: visible
                 };
@@ -502,7 +537,7 @@ function storeTimeline(){
 function tween(frames, oldFrames, difference){   //retrieve current keyframe, old keyframe and time difference between them for new frames
     var counter = 0;
     tweenedFrames = new Array();
-    for (var i = 0; i < oldFrames.length; i++) {
+     for (var i = 0; i < oldFrames.length; i++) {
         for (var q = 0; q < frames.length; q++) {  
             
             if (frames[q].src == oldFrames[i].src) {       //check if the two array indexes are refering to the same image
@@ -529,9 +564,13 @@ function tween(frames, oldFrames, difference){   //retrieve current keyframe, ol
                 var newHeight = Math.round((height + ((nextHeight - height) / framesNeeded)));
                 
                 //get oldFrame rotation and next user sets rotation, then calculate the new rotation for first tweened frame
+                
                 var rotation = oldFrames[i].rotation;
+                console.log("OldFrame: " + rotation);
                 var nextRotation = frames[q].rotation;
+                console.log("NextFrame: " + nextRotation);
                 var newRotation = Math.round((rotation + ((nextRotation - rotation) / framesNeeded)));
+                console.log("newRotation: " + newRotation);
                 
                 tweenedFrames[counter] = new Array();
                 for (var j = 0; j < framesNeeded - 1; j++) {
