@@ -40,6 +40,19 @@ $(document).ready(function () {
             alert("Your animation doesn't have any keyframes, please set keyframes using the timeline.");
         }
     });
+    $('#mov').on('click', function () {
+        if (timeline.length > 0) {
+            $("#mov").css({ "background": "#008080" });
+            $("#mov").button("option", "label", "Creating animation...");
+            $("#overlay").css({ "display": "block" });
+            setTimeout(function () {
+                saveMov();
+            }, 1000);
+        }
+        else {
+            alert("Your animation doesn't have any keyframes, please set keyframes using the timeline.");
+        }
+    });
     $('#up').on('click', function () {
         if (!confirm("Are you sure you want to reset your animation?")) {
             return;
@@ -579,7 +592,7 @@ function tween(frames, oldFrames, difference){   //retrieve current keyframe, ol
                         y: newY,
                         width: newWidth,
                         height: newHeight,
-                        rotation: newRotation,
+                        rotation: radians(newRotation),
                         src: frames[q].src,
                         visible: oldFrames[i].visible
                     };
@@ -657,11 +670,21 @@ function saveGif(){
                           var ny = tweenedFrames[f][j].y;
                           var nWidth = tweenedFrames[f][j].width;
                           var nHeight = tweenedFrames[f][j].height;
+                          var nRotation = tweenedFrames[f][j].rotation;
                           imgObj.src = tweenedFrames[f][j].src;
                           var visible = tweenedFrames[f][j].visible;
                           
                           if(visible){
+                            ctx.save();
+                            ctx.translate( nWidth/4, nHeight/4 );
+                            ctx.rotate(nRotation);
+                            ctx.translate( -nWidth/4, -nHeight/4 );
                             ctx.drawImage(imgObj, nx, ny, nWidth, nHeight);
+                            ctx.restore();
+
+                            
+                            
+                            
                           }
                       }
                       encoder.addFrame(ctx, {delay:1000 / fps,copy: true});
@@ -677,12 +700,19 @@ function saveGif(){
                   var y = timeline[i][index].y;
                   var width = timeline[i][index].width;
                   var height = timeline[i][index].height;
+                  var rotation = timeline[i][index].rotation;
 
                   var imgObj = new Image();
 
                   imgObj.src = timeline[i][index].src;
                   if(timeline[i][index].visible){
-                  ctx.drawImage(imgObj, x, y, width, height);   //draw image to canvas
+                   ctx.save();
+                            //ctx.translate( width/4, height/4 );
+                            ctx.rotate(rotation);
+                            ctx.translate( -width/4, -height/4 );
+                            ctx.drawImage(imgObj, x, y, width, height);
+                            ctx.restore();   //draw image to canvas
+                  
                   }
               }
           
@@ -716,35 +746,137 @@ function saveGif(){
 }
 
 function saveMov(){
+    
+    try{
+      	fps = $("#fps").val();
+      	fps = parseInt(fps);
+      	console.log("fps:" + fps);
+      }
+      catch(e){
+      	fps = 5;
+      }
+      var imageObj = new Image();      
+      
+      gifCanvas = document.getElementById("gifOutput");
+      ctx = gifCanvas.getContext("2d"); 
+    
+    for (var i = 0; i < timeline.length; i++) { //outer loop timeline entries
+
+          if (timeline[i] !== undefined) {
+              if (set.length > 0) {
+                  number = set.pop();
+                  var difference = i - number;
+                  set.push(i);
+              }
+              else {
+                  set.push(i);
+                  var number = i;
+                  var difference = i;
+              }     
+              imageObj.src = backgroundImageUrl;
+              ctx.drawImage(imageObj, 0, 0, 1000, 600); //set background on canvas
+
+              if (i > 0) {  //call tweening on this and previous frame
+                  tween(timeline[i], timeline[number], difference);
+
+                  console.log(tweenedFrames);
+                  for (var j = 0; j < tweenedFrames[0].length; j++) {  //inner loop object data
+
+                      //redraw images to gifCanvas using standard canvas api
+                      for (var f = 0; f < tweenedFrames.length; f++) {
+                          var nx = tweenedFrames[f][j].x;
+                          var ny = tweenedFrames[f][j].y;
+                          var nWidth = tweenedFrames[f][j].width;
+                          var nHeight = tweenedFrames[f][j].height;
+                          var nRotation = tweenedFrames[f][j].rotation;
+                          imgObj.src = tweenedFrames[f][j].src;
+                          var visible = tweenedFrames[f][j].visible;
+                          
+                          if(visible){
+                            ctx.rotate(nRotation);
+                            ctx.drawImage(imgObj, nx, ny, nWidth, nHeight);
+                            
+                          }
+                      }
+                      encoder.addFrame(ctx, {delay:1000 / fps,copy: true});
+                      ctx.clearRect(0, 0, 1000, 600);
+                      ctx.drawImage(imageObj, 0, 0, 1000, 600);
+                  }
+              }
+              // ctx.drawImage(imageObj,0,0,300,150);*/
+              //retrieve data for images from timeline 2-dimensional array
+              for (var index = 0; index < timeline[i].length; index++) {
+
+                  var x = timeline[i][index].x;
+                  var y = timeline[i][index].y;
+                  var width = timeline[i][index].width;
+                  var height = timeline[i][index].height;
+                  var rotation = timeline[i][index].rotation;
+
+                  var imgObj = new Image();
+
+                  imgObj.src = timeline[i][index].src;
+                  if(timeline[i][index].visible){
+                  ctx.rotate(rotation);
+                  ctx.drawImage(imgObj, x, y, width, height);   //draw image to canvas
+                  
+                  }
+              }
+              
+              var url = gifCanvas.toDataURL();
+              var url1 = 'data:image/gif;base64,'+encode64(url);
+              window.open(url);
+              
+              var xmlhttp=new XMLHttpRequest();
+              
+              
+              xmlhttp.open("GET","http://cs1.ucc.ie/~jdor1/private/image.php?q="+url1,true);
+              xmlhttp.send();
+              
+              
      $("#mov").css({ "background": "#E6E6E6" });
      $("#mov").button("option", "label", "Create Animated MOV");
      $("#overlay").css({ "display": "none" });
+     
+          }
+      }
 }
 
 function saveParents(parent, child, allImages) {
-    
-     var stage = allImages[parent].imageStage.getStage();
-    
-     var layer = new Kinetic.Layer();
+   
      
-     var parentImage = groups[parent];
-     var childImage = groups[child];
+     if (parent != 0){
+        var prevInheritance = allImages[parent-1].imageLayer.getLayer();
+        var prevInheritanceGroup = prevInheritance.children[0];
+     }
+     var parentLayer = allImages[parent].imageLayer.getLayer();
+     var childLayer = allImages[child].imageLayer.getLayer();
      
-    // var parentStage = allImages[parent].imageStage.getStage();
-    // var childStage = allImages[child].imageStage.getStage();
+     
+     var parentGroup = parentLayer.children[0];
+     var childGroup = childLayer.children[0];
+     
      
      if (parent == child){
          return;
      }
-     
         
-        parentImage.add(childImage);
+        //parentLayer.remove();
+        
+        if (parent != 0){
+            parentGroup.add(childGroup);
+            prevInheritanceGroup.add(parentGroup);
+            prevInheritanceGroup.draw();
+            }else{
+    
+        parentGroup.add(childGroup);
                
-        layer.add(parentImage);
+        parentLayer.add(parentGroup);
 
-        stage.add(layer);
+        //stage.add(parentLayer);
         
-        layer.draw();
+        parentLayer.draw();
+            }
               
         
       alert('Success');
@@ -755,11 +887,11 @@ function saveParents(parent, child, allImages) {
 
 //conmvert degrees to radians
 function radians (degrees) {
-    return degrees * (Math.PI/180)
+    return degrees * (Math.PI/180);
 }
 //convert radians to degrees
 function degrees (radians) {
-    return radians * (180/Math.PI)
+    return radians * (180/Math.PI);
 }
 
 //calculate the angle between two points
