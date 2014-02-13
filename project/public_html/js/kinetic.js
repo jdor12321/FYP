@@ -335,6 +335,8 @@ function update(group, activeAnchor) {
     
     var centreX = group.getOffsetX();
     var centreY = group.getOffsetY();
+    
+    var absolute = group.getPosition();
 
     var width = group.getWidth();
     var height = group.getHeight();
@@ -384,22 +386,19 @@ function update(group, activeAnchor) {
               break;
               
         case "centre":
-            centre.on("dragmove", function(){
-                group.setDraggable(false);
-              });
-              var absolute = group.getPosition();
-              group.setOffset({x:anchorX, y:anchorY});
               
-              centre.on("dragend", function(){
-                group.setDraggable(true);
-                //group.setPosition({x:absolute.x + group.getOffsetX(), y:absolute.y + group.getOffsetY()});
+              //group.setOffset({x:anchorX, y:anchorY});
+              
+              activeAnchor.on("dragend", function(){
+                 group.setOffset(anchorX, anchorY);
+                 
               });
+              
+              group.setPosition(topLeft.x, topLeft.y);
               
       }
       
-      activeAnchor.on("dragend", function(){
-     //           group.setOffset(anchorX/2, anchorY/2);
-              });
+      
     var offsetX = group.getOffsetX();
     var offsetY = group.getOffsetY();
 
