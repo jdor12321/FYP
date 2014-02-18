@@ -12,6 +12,7 @@ var stop = false;
 var i;
 var count = 0;
 var groups = new Array();
+var hierarchy = new Array();
 
 $(document).ready(function () {
 
@@ -77,6 +78,13 @@ $(document).ready(function () {
         $("#container div").css({ "background": "none" });
     });
     $('#sortable').sortable({
+        update: function (event, ui) {
+            var layerArray = $(this).sortable('toArray');
+            updateLayers(layerArray);
+            stop = true;
+        }
+    });
+    $('#parents').sortable({
         update: function (event, ui) {
             var layerArray = $(this).sortable('toArray');
             updateLayers(layerArray);
@@ -253,6 +261,22 @@ function newImage(url, name, stage, layer) { //Image constructor function
     this.imageLayer = layer;
 }
 
+function newRelationship(parent, child, layer1, layer2, id1, id2) { //Image constructor function
+    var parentGroup;
+    var childGroup;
+    var parentLayer;
+    var childLayer;
+    var parentId;
+    var childId;
+    
+    this.parentGroup = parent;
+    this.childGroup = child;
+    this.parentLayer = layer1;
+    this.childLayer = layer2;
+    this.parentId = id1;
+    this.childId = id2;
+}
+
 function addLayers(layerName, layerId){  //creates layer UI
     $("ul").append("<li onclick=\"visible(this.id)\" id=\"" + layerId + "\" class=\"ui-state-default\">\n\
     <span class=\"ui-icon picture\"></span>" + "&nbsp;" + layerName + "</li>");
@@ -332,6 +356,12 @@ function resetSortableIds(){
     for(var i = 0; i<childrenCount; i++)
     {
         $("#sortable").children().eq(i).attr("id", i);
+    }
+    
+    var childrenCount = $("#parents").children().length;
+    for(var i = 0; i<childrenCount; i++)
+    {
+        $("#parents").children().eq(i).attr("id", i);
     }
 }
 
@@ -798,7 +828,7 @@ function saveMov(){
                             
                           }
                       }
-                      encoder.addFrame(ctx, {delay:1000 / fps,copy: true});
+                      //encoder.addFrame(ctx, {delay:1000 / fps,copy: true});
                       ctx.clearRect(0, 0, 1000, 600);
                       ctx.drawImage(imageObj, 0, 0, 1000, 600);
                   }
@@ -823,15 +853,13 @@ function saveMov(){
                   }
               }
               
-              var url = gifCanvas.toDataURL();
-              var url1 = 'data:image/gif;base64,'+encode64(url);
-              window.open(url);
+              convertCanvasToImage(gifCanvas);
               
-              var xmlhttp=new XMLHttpRequest();
-              
-              
-              xmlhttp.open("GET","http://cs1.ucc.ie/~jdor1/private/image.php?q="+url1,true);
-              xmlhttp.send();
+//              var xmlhttp=new XMLHttpRequest();
+//              
+//              
+//              xmlhttp.open("GET","http://cs1.ucc.ie/~jdor1/private/image.php?q="+url1,true);
+//              xmlhttp.send();
               
               
      $("#mov").css({ "background": "#E6E6E6" });
@@ -844,11 +872,6 @@ function saveMov(){
 
 function saveParents(parent, child, allImages) {
    
-     
-     if (parent != 0){
-        var prevInheritance = allImages[parent-1].imageLayer.getLayer();
-        var prevInheritanceGroup = prevInheritance.children[0];
-     }
      var parentLayer = allImages[parent].imageLayer.getLayer();
      var childLayer = allImages[child].imageLayer.getLayer();
      
@@ -860,24 +883,50 @@ function saveParents(parent, child, allImages) {
      if (parent == child){
          return;
      }
-        
-        //parentLayer.remove();
-        
-        if (parent != 0){
-            parentGroup.add(childGroup);
-            prevInheritanceGroup.add(parentGroup);
-            prevInheritanceGroup.draw();
-            }else{
-    
+     
+     if (hierarchy.length != 0){
+         
+         console.log("If 1");
+         
+         for (var i = 0; i < count; i++){
+             
+             console.log("Loop count: " + count);
+             
+             var parentLayer1 = hierarchy[i].parentLayer.getLayer();
+             var childLayer1 = hierarchy[i].childLayer.getLayer();
+             
+             var parentGroup1 = parentLayer1.children[0];
+             var childGroup1 = childLayer1.children[0];
+             
+             var parentId = hierarchy[i].parentId;
+             var childId = hierarchy[i].childId;
+             
+             //console.log("parent: " + parent + " , child: " + child + " , parent id: " + parentId + ", child id: " + childId);
+             
+             if(childGroup1 == parentGroup) {
+                 alert('true');
+                 parentGroup = parentGroup1;
+                 parentLayer = parentLayer1;
+             }
+             
+         }
+         
+     }
+     
         parentGroup.add(childGroup);
                
         parentLayer.add(parentGroup);
 
-        //stage.add(parentLayer);
-        
         parentLayer.draw();
-            }
-              
+        
+        
+        var relationshpObject = new newRelationship(parentGroup, childGroup, parentLayer, childLayer, parentId, childId);
+        
+        hierarchy[count] = relationshpObject;
+                   
+        count++;
+        
+        console.log("Parent: " + parent + ", Child: " + child);
         
       alert('Success');
       
@@ -904,4 +953,10 @@ function angle (cx, cy, px, py) {
 
 function distance (p1x, p1y, p2x, p2y) {
     return Math.sqrt (Math.pow ((p2x - p1x), 2) + Math.pow ((p2y - p1y), 2))
+}
+
+function convertCanvasToImage(canvas) {
+	var image = new Image();
+	image.src = canvas.toDataURL("image/png");
+	return image;
 }
