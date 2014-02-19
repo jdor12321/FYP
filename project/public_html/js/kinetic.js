@@ -103,8 +103,7 @@ $(document).ready(function () {
         
         var childLayerId = document.getElementById("parents").getElementsByTagName("li")[i].id;
         
-        console.log(i);
-        
+
         saveParents(parentLayerId, childLayerId, allImages); 
         
         }
@@ -871,42 +870,55 @@ function saveMov(){
 }
 
 function saveParents(parent, child, allImages) {
+    
+     if (parent == child){
+         return;
+     }
    
      var parentLayer = allImages[parent].imageLayer.getLayer();
      var childLayer = allImages[child].imageLayer.getLayer();
+     
+     var parentName = allImages[parent].imageName;
+     var childName = allImages[child].imageName;
      
      
      var parentGroup = parentLayer.children[0];
      var childGroup = childLayer.children[0];
      
      
-     if (parent == child){
-         return;
-     }
-     
      if (hierarchy.length != 0){
          
-         console.log("If 1");
+         console.log("Loop count: " + count);
          
          for (var i = 0; i < count; i++){
              
-             console.log("Loop count: " + count);
              
              var parentLayer1 = hierarchy[i].parentLayer.getLayer();
              var childLayer1 = hierarchy[i].childLayer.getLayer();
              
              var parentGroup1 = parentLayer1.children[0];
              var childGroup1 = childLayer1.children[0];
+           
+             var parentName1 = hierarchy[i].parentId;
+             var childName1 = hierarchy[i].childId;
              
-             var parentId = hierarchy[i].parentId;
-             var childId = hierarchy[i].childId;
+             parentGroup1.add(childGroup1);
+               
+             parentLayer1.add(parentGroup1);
+
+             parentLayer1.draw();
              
-             //console.log("parent: " + parent + " , child: " + child + " , parent id: " + parentId + ", child id: " + childId);
+             console.log("INHERITANCE -- parent name: " + parentName1 + ", child name: " + childName1 + ", count: " + count);
              
-             if(childGroup1 == parentGroup) {
-                 alert('true');
+             if(childName1 == parentName) {
+                 console.log('Match');
                  parentGroup = parentGroup1;
                  parentLayer = parentLayer1;
+
+             } else {
+                 
+                 console.log('no match');
+                 
              }
              
          }
@@ -920,13 +932,15 @@ function saveParents(parent, child, allImages) {
         parentLayer.draw();
         
         
-        var relationshpObject = new newRelationship(parentGroup, childGroup, parentLayer, childLayer, parentId, childId);
+        
+        
+        var relationshpObject = new newRelationship(parentGroup, childGroup, parentLayer, childLayer, parentName, childName);
         
         hierarchy[count] = relationshpObject;
                    
         count++;
         
-        console.log("Parent: " + parent + ", Child: " + child);
+        console.log("Parent: " + parent + ", Child: " + child + " , parent name: " + parentName + ", child name: " + childName);
         
       alert('Success');
       
