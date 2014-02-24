@@ -549,6 +549,8 @@ function storeTimeline(group){
                     width: layer.children[0].children[0].getWidth(),
                     height: layer.children[0].children[0].getHeight(),
                     rotation: layer.children[0].getRotationDeg(),
+                    offsetX: layer.children[0].getOffsetX(),
+                    offsetY: layer.children[0].getOffsetY(),
                     src: src,
                     visible: visible
                 };
@@ -560,6 +562,8 @@ function storeTimeline(group){
                     width: layer.children[0].children[0].getWidth(),
                     height: layer.children[0].children[0].getHeight(),
                     rotation: layer.children[0].getRotationDeg(),
+                    offsetX: layer.children[0].getOffsetX(),
+                    offsetY: layer.children[0].getOffsetY(),
                     src: src,
                     visible: visible
                 };
@@ -680,9 +684,16 @@ function saveGif(){
       //set gif quality
       //encoder.setQuality(10);
       //encoder.start();
+      
+
 
       for (var i = 0; i < timeline.length; i++) { //outer loop timeline entries
-
+          
+          var layer = allImages[0].imageLayer.getLayer();
+          var group = layer.children[0];
+          var offsetX = group.getOffsetX();
+          var offsetY = group.getOffsetY();
+      
           if (timeline[i] !== undefined) {
               if (set.length > 0) {
                   number = set.pop();
@@ -697,6 +708,8 @@ function saveGif(){
               imageObj.src = backgroundImageUrl;
               ctx.drawImage(imageObj, 0, 0, 1000, 600); //set background on canvas
 
+              var a = 2;
+              var b = 2;
               if (i > 0) {  //call tweening on this and previous frame
                   tween(timeline[i], timeline[number], difference);
 
@@ -710,19 +723,29 @@ function saveGif(){
                           var nWidth = tweenedFrames[f][j].width;
                           var nHeight = tweenedFrames[f][j].height;
                           var nRotation = tweenedFrames[f][j].rotation;
+
                           imgObj.src = tweenedFrames[f][j].src;
                           var visible = tweenedFrames[f][j].visible;
                           
                           if(visible){
-                            ctx.save();
-                            ctx.translate( nWidth/4, nHeight/4 );
-                            ctx.rotate(nRotation);
-                            ctx.translate( -nWidth/4, -nHeight/4 );
-                            ctx.drawImage(imgObj, nx, ny, nWidth, nHeight);
-                            ctx.restore();
-
-                            
-                            
+                              
+                              var xOffset = nWidth / -a;
+                              var yOffset = nHeight / -b;
+                                ctx.save();
+                                //ctx.translate(nx, ny);
+                                ctx.translate(nx, ny);
+                                ctx.rotate(nRotation);
+                                ctx.translate(-nx, -ny);
+                                ctx.drawImage(imgObj, xOffset, yOffset, nWidth, nHeight);
+                                ctx.restore();
+//                            ctx.save();
+//                            
+//                            ctx.translate( a, b );
+//                            ctx.rotate(nRotation);
+//                            ctx.translate( -a, -b );
+//                            ctx.drawImage(imgObj, nx, ny, nWidth, nHeight);
+//                            ctx.restore();
+             
                             
                           }
                       }
@@ -745,12 +768,22 @@ function saveGif(){
 
                   imgObj.src = timeline[i][index].src;
                   if(timeline[i][index].visible){
-                   ctx.save();
-                            //ctx.translate( width/4, height/4 );
-                            ctx.rotate(rotation);
-                            ctx.translate( -width/4, -height/4 );
-                            ctx.drawImage(imgObj, x, y, width, height);
-                            ctx.restore();   //draw image to canvas
+                      
+                              var xOffset = width / -a;
+                              var yOffset = height / -b;
+                              ctx.save();
+                              ctx.translate(x, y);
+                                //ctx.translate(x, y);
+                                ctx.rotate(rotation);
+                                ctx.translate(-x,-y);
+                                ctx.drawImage(imgObj, xOffset, yOffset, width, height);
+                                ctx.restore();
+//                   ctx.save();
+//                            ctx.translate( a, b );
+//                            ctx.rotate(nRotation);
+//                            ctx.translate( -100, -100 );
+//                            ctx.drawImage(imgObj, x, y, width, height);
+//                            ctx.restore();   //draw image to canvas
                   
                   }
               }
