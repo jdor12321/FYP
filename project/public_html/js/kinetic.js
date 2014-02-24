@@ -110,6 +110,13 @@ $(document).ready(function () {
         
     });
     
+     $('#obvious').on('click', function () {
+        
+           obvious();
+        
+
+    });
+    
     //Alert window when refreshing page. commented out for the moment during developement
    /* window.onbeforeunload = function () {
         return "Woah! Are you sure you want to do this? You will lose your animation...";
@@ -178,6 +185,7 @@ function addImage(stage){
             radius: 3,
             fill: "#5050E1",
             stroke: "#666",
+            name: 'rotate',
             strokeWidth: 1,
             draggable : true
         });
@@ -216,6 +224,8 @@ function addImage(stage){
 
         stage.add(layer);
         layer.draw();
+        group.setName(name);
+        
         
         rotate.on("dragstart", function(){
             var pos = rotate.getPosition();
@@ -874,69 +884,154 @@ function saveParents(parent, child, allImages) {
      if (parent == child){
          return;
      }
+     
+     
    
      var parentLayer = allImages[parent].imageLayer.getLayer();
      var childLayer = allImages[child].imageLayer.getLayer();
      
-     var parentName = allImages[parent].imageName;
-     var childName = allImages[child].imageName;
-     
+     var torsoLayer = allImages[0].imageLayer.getLayer();
+     var torsoGroup = torsoLayer.children[0];
      
      var parentGroup = parentLayer.children[0];
      var childGroup = childLayer.children[0];
      
+     var parentName = parentGroup.getName();
+     var childName = childGroup.getName();
      
-     if (hierarchy.length != 0){
+     //parentGroup.setName('parent');
+     //childGroup.setName('child');
+     
+     var stage = parentGroup.getStage();
+     
+     var relationshpObject = new newRelationship(parentGroup, childGroup, parentLayer, childLayer, parentName, childName);
+        
+     hierarchy[count] = relationshpObject;
+     
+     var layer = new Kinetic.Layer();
+     
+     var rotate = new Kinetic.Circle({
+            x: 100,
+            y: 100,
+            radius: 10,
+            fill: "#5050E1",
+            stroke: "#666",
+            name: 'rotate',
+            strokeWidth: 1,
+            draggable : true
+        });
+     
+     var group = new Kinetic.Group({
+            x: 100,
+            y: 100,
+            name: 'InheritedGroup',
+            draggable: true,
+            stroke: "#FFFFF",
+            strokeWidth: 2,
+            dragOnTop : false
+        });     
+     
+//     if (hierarchy.length != 0){
+//         
+//         console.log("Loop count: " + count);
+//         
+//         for (var i = 0; i < count; i++){
+//             
+//             
+//             var parentLayer1 = hierarchy[i].parentLayer.getLayer();
+//             var childLayer1 = hierarchy[i].childLayer.getLayer();
+//             
+//             var parentGroup1 = parentLayer1.children[0];
+//             var childGroup1 = childLayer1.children[0];
+//           
+//             var parentName1 = hierarchy[i].parentId;
+//             var childName1 = hierarchy[i].childId;
+//             
+//             console.log("INHERITANCE -- parent name: " + parentName1 + ", child name: " + childName1 + ", count: " + count);
+//             
+//             
+//             
+//             if(childName1 == parentName) {
+//                 console.log('Match');
+//                 
+//                 for(var j = count; j >= 0; j--){
+//                     
+//                     console.log(j);
+//                     var parentLayer2 = hierarchy[j].parentLayer.getLayer();
+//                     var childLayer2 = hierarchy[j].childLayer.getLayer();
+//             
+//                     var parentGroup2 = parentLayer2.children[0];
+//                     var childGroup2 = childLayer2.children[0];
+//           
+//                     var parentName2 = hierarchy[j].parentId;
+//                     var childName2 = hierarchy[j].childId;
+//                    
+//                     childGroup2.add(parentGroup1);
+//                     parentLayer2.add(childGroup2);
+//                     parentLayer2.draw();
+//                 }
+//                 
+//                 
+//                 //parentLayer.draw();
+//                 
+//                 parentGroup = parentGroup1;
+//                 parentLayer = parentLayer1;
+//
+//             } else {
+//                 
+//                 console.log('no match');
+//                 
+//             }
+//             
+//         }
+//         
+//     } else {
+////         stage.removeChildren();
+//     }
+//     
          
-         console.log("Loop count: " + count);
-         
-         for (var i = 0; i < count; i++){
-             
-             
-             var parentLayer1 = hierarchy[i].parentLayer.getLayer();
-             var childLayer1 = hierarchy[i].childLayer.getLayer();
-             
-             var parentGroup1 = parentLayer1.children[0];
-             var childGroup1 = childLayer1.children[0];
-           
-             var parentName1 = hierarchy[i].parentId;
-             var childName1 = hierarchy[i].childId;
-             
-             parentGroup1.add(childGroup1);
-               
-             parentLayer1.add(parentGroup1);
 
-             parentLayer1.draw();
-             
-             console.log("INHERITANCE -- parent name: " + parentName1 + ", child name: " + childName1 + ", count: " + count);
-             
-             if(childName1 == parentName) {
-                 console.log('Match');
-                 parentGroup = parentGroup1;
-                 parentLayer = parentLayer1;
-
-             } else {
-                 
-                 console.log('no match');
-                 
-             }
-             
-         }
-         
-     }
+        
+//        group.add(parentGroup);
+//        
+//        layer.add(group);
+//               
+//        stage.add(layer);
+//        layer.draw();
+//        
+//        group.add(childGroup);
+//        group.add(rotate);
+//        
+//        layer.add(group);
+//        
+//        layer.draw();
+        
+        
+        
+        
+        
+        
      
         parentGroup.add(childGroup);
-               
-        parentLayer.add(parentGroup);
+              
+        parentLayer.add(torsoGroup);
+        
+        //childGroup.setPosition(parentGroup.x-100,parentGroup.y-100);
+        
+       //parentLayer.setPosition(childGroup.x,childGroup.y);
+        
+        
+        
+        
+       // childLayer.hide();
 
         parentLayer.draw();
         
         
         
         
-        var relationshpObject = new newRelationship(parentGroup, childGroup, parentLayer, childLayer, parentName, childName);
         
-        hierarchy[count] = relationshpObject;
+        
                    
         count++;
         
@@ -973,4 +1068,52 @@ function convertCanvasToImage(canvas) {
 	var image = new Image();
 	image.src = canvas.toDataURL("image/png");
 	return image;
+}
+
+function obvious() {
+    
+    var stage = allImages[0].imageStage.getStage();
+    console.log(stage);
+    
+    var objects = stage.getChildren();
+    
+    
+    var torsoLayer = objects[0].getLayer();
+    var rightUpperLayer = objects[1].getLayer();
+    var rightLowerLayer = objects[2].getLayer();
+    var rightFootLayer = objects[3].getLayer();
+    
+    var torso = torsoLayer.children[0];
+    var rightupperleg = rightUpperLayer.children[0];
+    var rightlowerleg = rightLowerLayer.children[0];
+    var rightfoot = rightFootLayer.children[0];
+    
+    //var torso = objects.get(".torso")[0];
+    console.log(torso.getName());
+    //var rightupperleg = stage.get(".rightupperleg")[0];
+    console.log(rightupperleg.getName());
+    //var rightlowerleg = stage.get(".rightlowerleg")[0];
+    console.log(rightlowerleg.getName());
+    //var rightfoot = stage.get(".rightfoot")[0];
+    console.log(rightfoot.getName());
+    
+    var torsoLayer = torso.getLayer();
+    var rightUpperLayer = rightupperleg.getLayer();
+    var rightLowerLayer = rightlowerleg.getLayer();
+    
+    torso.add(rightupperleg);
+    torsoLayer.add(torso);
+    torsoLayer.draw();
+    
+    rightupperleg.add(rightlowerleg);
+    rightUpperLayer.add(torso);
+    rightUpperLayer.draw();
+    
+    rightlowerleg.add(rightfoot);
+    rightLowerLayer.add(torso);
+    rightLowerLayer.draw();
+    
+    alert("Obvious Complete");
+    
+    
 }
