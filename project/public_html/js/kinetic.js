@@ -11,8 +11,7 @@ var fps;
 var stop = false;
 var i;
 var count = 0;
-var groups = new Array();
-var hierarchy = new Array();
+//var hierarchy = new Array();
 
 $(document).ready(function () {
 
@@ -106,6 +105,10 @@ $(document).ready(function () {
 
         saveParents(parentLayerId, childLayerId, allImages); 
         
+        if (allImages.length == count) {
+            alert('Parents Sucessfully added');
+        }
+        
         }
         
     });
@@ -133,6 +136,7 @@ function addImage(stage){
     var url = window.URL;
     var src = url.createObjectURL(f);
     imageObj.src = src;
+    
       
     imageObj.onload = function() {
       var myImage = new Kinetic.Image({
@@ -147,8 +151,7 @@ function addImage(stage){
           id: allImages.length
         });
         
-        
-        
+                
         myImage.setStroke('clear');
         
         myImage.on("dragstart", function(){
@@ -178,25 +181,24 @@ function addImage(stage){
             draggable: true
         });
         
+       function linePoints (dis) {return [
+    [group.getWidth() * group.getScale().x + 7, group.getOffset().y],
+    [group.getWidth() * group.getScale().x + Math.max (dis, 7), group.getOffset().y]
+  ]};
         
         var rotate = new Kinetic.Circle({
             x: imageObj.width/1.25,
             y: imageObj.height/4,
             radius: 3,
-            fill: "#5050E1",
+            fill: "yellow",
             stroke: "#666",
             name: 'rotate',
             strokeWidth: 1,
             draggable : true
         });
-        
-        
-        group.add(myImage);
-        group.add(rotate);
-        layer.add(group);
-        
-        
-        
+
+       
+    
         rotate.setDragBoundFunc (function (pos) {
            var groupPos = group.getPosition();
            var rotation = degrees (angle (groupPos.x, groupPos.y, pos.x, pos.y));
@@ -206,9 +208,15 @@ function addImage(stage){
            return pos;
         });
         
-       
         
-       
+        
+        
+        group.add(myImage);
+        group.add(rotate);
+        
+        layer.add(group);
+        
+               
         addAnchor(group, imageObj.width /4, imageObj.height /4, "centre", "#228B22");
         //addAnchor(group, imageObj.width/1.25, imageObj.height/4, "rotate", "#5050E1");
         addAnchor(group, 0, 0, "topLeft", "#fff");
@@ -219,8 +227,6 @@ function addImage(stage){
          //sets the centre of the image
         
         group.setOffset (myImage.getWidth() * myImage.getScale().x / 2, myImage.getHeight() * myImage.getScale().y / 2);
-
-        groups[allImages.length-1] = group;
 
         stage.add(layer);
         layer.draw();
@@ -270,21 +276,6 @@ function newImage(url, name, stage, layer) { //Image constructor function
     this.imageLayer = layer;
 }
 
-function newRelationship(parent, child, layer1, layer2, id1, id2) { //Image constructor function
-    var parentGroup;
-    var childGroup;
-    var parentLayer;
-    var childLayer;
-    var parentId;
-    var childId;
-    
-    this.parentGroup = parent;
-    this.childGroup = child;
-    this.parentLayer = layer1;
-    this.childLayer = layer2;
-    this.parentId = id1;
-    this.childId = id2;
-}
 
 function addLayers(layerName, layerId){  //creates layer UI
     $("ul").append("<li onclick=\"visible(this.id)\" id=\"" + layerId + "\" class=\"ui-state-default\">\n\
@@ -397,8 +388,8 @@ function update(group, activeAnchor) {
          case 'topLeft':
               topRight.setY(anchorY);
               bottomLeft.setX(anchorX);
-              centreX = anchorX/2;
-              centreY = anchorY/2;
+              centreY = topRight.getY();
+              centreX = bottomLeft.getX();
               centre.setX(centreX);
               centre.setY(centreY);
              // centre.setY(centreY);
@@ -406,10 +397,11 @@ function update(group, activeAnchor) {
               break;
               
         case 'topRight':
-              topLeft.setY(anchorY);
               bottomRight.setX(anchorX);
-              centreX = anchorX/2;
-              centreY = anchorY/2;
+              topLeft.setY(anchorY);
+              
+              centreX = anchorX/1;
+              centreY = anchorY*2;
               centre.setX(centreX);
               centre.setY(centreY);
              // centre.setY(centreY);
@@ -708,8 +700,6 @@ function saveGif(){
               imageObj.src = backgroundImageUrl;
               ctx.drawImage(imageObj, 0, 0, 1000, 600); //set background on canvas
 
-              var a = 2;
-              var b = 2;
               if (i > 0) {  //call tweening on this and previous frame
                   tween(timeline[i], timeline[number], difference);
 
@@ -723,30 +713,25 @@ function saveGif(){
                           var nWidth = tweenedFrames[f][j].width;
                           var nHeight = tweenedFrames[f][j].height;
                           var nRotation = tweenedFrames[f][j].rotation;
-
+                          var pRotation = nRotation;  
+                          if (j != 0) {
+                              pRotation = tweenedFrames[f][j-1].rotation;
+                          }
                           imgObj.src = tweenedFrames[f][j].src;
                           var visible = tweenedFrames[f][j].visible;
                           
-                          if(visible){
-                              
-                              var xOffset = nWidth / -a;
-                              var yOffset = nHeight / -b;
-                                ctx.save();
-                                //ctx.translate(nx, ny);
-                                ctx.translate(nx, ny);
-                                ctx.rotate(nRotation);
-                                ctx.translate(-nx, -ny);
-                                ctx.drawImage(imgObj, xOffset, yOffset, nWidth, nHeight);
-                                ctx.restore();
-//                            ctx.save();
-//                            
-//                            ctx.translate( a, b );
-//                            ctx.rotate(nRotation);
-//                            ctx.translate( -a, -b );
-//                            ctx.drawImage(imgObj, nx, ny, nWidth, nHeight);
-//                            ctx.restore();
-             
+                          if(visible){                   
+                            ctx.save();
                             
+                            if (nRotation == pRotation) {
+                                ctx.translate(nx, ny);
+                            } else {
+                                ctx.translate(x, y);
+                            } 
+                            ctx.translate(offsetX, offsetY);
+                            ctx.rotate(nRotation);
+                            ctx.drawImage(imgObj, -offsetX, -offsetY, nWidth, nHeight);
+                            ctx.restore();
                           }
                       }
                       encoder.addFrame(ctx, {delay:1000 / fps,copy: true});
@@ -764,27 +749,19 @@ function saveGif(){
                   var height = timeline[i][index].height;
                   var rotation = timeline[i][index].rotation;
 
+                  var offsetX = timeline[i][index].offsetX;
+                  var offsetY = timeline[i][index].offsetY;
+
                   var imgObj = new Image();
 
                   imgObj.src = timeline[i][index].src;
                   if(timeline[i][index].visible){
-                      
-                              var xOffset = width / -a;
-                              var yOffset = height / -b;
-                              ctx.save();
-                              ctx.translate(x, y);
-                                //ctx.translate(x, y);
-                                ctx.rotate(rotation);
-                                ctx.translate(-x,-y);
-                                ctx.drawImage(imgObj, xOffset, yOffset, width, height);
-                                ctx.restore();
-//                   ctx.save();
-//                            ctx.translate( a, b );
-//                            ctx.rotate(nRotation);
-//                            ctx.translate( -100, -100 );
-//                            ctx.drawImage(imgObj, x, y, width, height);
-//                            ctx.restore();   //draw image to canvas
-                  
+                    ctx.save();
+                    ctx.translate(x, y);
+                    ctx.translate(offsetX, offsetY);
+                    ctx.rotate(rotation);
+                    ctx.drawImage(imgObj, -offsetX, -offsetY, width, height);
+                    ctx.restore();
                   }
               }
           
@@ -803,7 +780,7 @@ function saveGif(){
        encoder.on('finished', function(blob) {
               window.open(URL.createObjectURL(blob));
               $("#gif").css({ "background": "#E6E6E6" });
-              $("#gif").button("option", "label", "Create Animated Gif");
+              $("#gif").button("option", "label", "Create Animated GIF");
               $("#overlay").css({ "display": "none" });
             });
 
@@ -831,6 +808,7 @@ function saveMov(){
       
       gifCanvas = document.getElementById("gifOutput");
       ctx = gifCanvas.getContext("2d"); 
+      var xmlhttp=new XMLHttpRequest();
     
     for (var i = 0; i < timeline.length; i++) { //outer loop timeline entries
 
@@ -868,6 +846,11 @@ function saveMov(){
                             ctx.rotate(nRotation);
                             ctx.drawImage(imgObj, nx, ny, nWidth, nHeight);
                             
+                            var image = 
+                            
+                            xmlhttp.open("GET","http://cs1.ucc.ie/~jdor1/private/image.php?q="+convertCanvasToImage(gifCanvas)+",n=1",true);
+                            xmlhttp.send();
+                            
                           }
                       }
                       //encoder.addFrame(ctx, {delay:1000 / fps,copy: true});
@@ -891,17 +874,20 @@ function saveMov(){
                   if(timeline[i][index].visible){
                   ctx.rotate(rotation);
                   ctx.drawImage(imgObj, x, y, width, height);   //draw image to canvas
-                  
+
                   }
               }
               
-              convertCanvasToImage(gifCanvas);
+              //var image = convertCanvasToImage(gifCanvas);
               
-//              var xmlhttp=new XMLHttpRequest();
+              
+              
+              
+              
 //              
 //              
-//              xmlhttp.open("GET","http://cs1.ucc.ie/~jdor1/private/image.php?q="+url1,true);
-//              xmlhttp.send();
+//              
+//              
               
               
      $("#mov").css({ "background": "#E6E6E6" });
@@ -932,116 +918,6 @@ function saveParents(parent, child, allImages) {
      var parentName = parentGroup.getName();
      var childName = childGroup.getName();
      
-     //parentGroup.setName('parent');
-     //childGroup.setName('child');
-     
-     var stage = parentGroup.getStage();
-     
-     var relationshpObject = new newRelationship(parentGroup, childGroup, parentLayer, childLayer, parentName, childName);
-        
-     hierarchy[count] = relationshpObject;
-     
-     var layer = new Kinetic.Layer();
-     
-     var rotate = new Kinetic.Circle({
-            x: 100,
-            y: 100,
-            radius: 10,
-            fill: "#5050E1",
-            stroke: "#666",
-            name: 'rotate',
-            strokeWidth: 1,
-            draggable : true
-        });
-     
-     var group = new Kinetic.Group({
-            x: 100,
-            y: 100,
-            name: 'InheritedGroup',
-            draggable: true,
-            stroke: "#FFFFF",
-            strokeWidth: 2,
-            dragOnTop : false
-        });     
-     
-//     if (hierarchy.length != 0){
-//         
-//         console.log("Loop count: " + count);
-//         
-//         for (var i = 0; i < count; i++){
-//             
-//             
-//             var parentLayer1 = hierarchy[i].parentLayer.getLayer();
-//             var childLayer1 = hierarchy[i].childLayer.getLayer();
-//             
-//             var parentGroup1 = parentLayer1.children[0];
-//             var childGroup1 = childLayer1.children[0];
-//           
-//             var parentName1 = hierarchy[i].parentId;
-//             var childName1 = hierarchy[i].childId;
-//             
-//             console.log("INHERITANCE -- parent name: " + parentName1 + ", child name: " + childName1 + ", count: " + count);
-//             
-//             
-//             
-//             if(childName1 == parentName) {
-//                 console.log('Match');
-//                 
-//                 for(var j = count; j >= 0; j--){
-//                     
-//                     console.log(j);
-//                     var parentLayer2 = hierarchy[j].parentLayer.getLayer();
-//                     var childLayer2 = hierarchy[j].childLayer.getLayer();
-//             
-//                     var parentGroup2 = parentLayer2.children[0];
-//                     var childGroup2 = childLayer2.children[0];
-//           
-//                     var parentName2 = hierarchy[j].parentId;
-//                     var childName2 = hierarchy[j].childId;
-//                    
-//                     childGroup2.add(parentGroup1);
-//                     parentLayer2.add(childGroup2);
-//                     parentLayer2.draw();
-//                 }
-//                 
-//                 
-//                 //parentLayer.draw();
-//                 
-//                 parentGroup = parentGroup1;
-//                 parentLayer = parentLayer1;
-//
-//             } else {
-//                 
-//                 console.log('no match');
-//                 
-//             }
-//             
-//         }
-//         
-//     } else {
-////         stage.removeChildren();
-//     }
-//     
-         
-
-        
-//        group.add(parentGroup);
-//        
-//        layer.add(group);
-//               
-//        stage.add(layer);
-//        layer.draw();
-//        
-//        group.add(childGroup);
-//        group.add(rotate);
-//        
-//        layer.add(group);
-//        
-//        layer.draw();
-        
-        
-        
-        
         
         
      
@@ -1059,18 +935,12 @@ function saveParents(parent, child, allImages) {
        // childLayer.hide();
 
         parentLayer.draw();
-        
-        
-        
-        
-        
-        
-                   
+
         count++;
         
         console.log("Parent: " + parent + ", Child: " + child + " , parent name: " + parentName + ", child name: " + childName);
         
-      alert('Success');
+      
       
      $("#saveParents").css({ "background": "#E6E6E6" });
     
