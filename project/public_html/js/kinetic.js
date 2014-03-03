@@ -11,7 +11,7 @@ var fps;
 var stop = false;
 var i;
 var count = 0;
-//var hierarchy = new Array();
+var relationships = new Array();
 
 $(document).ready(function () {
 
@@ -113,12 +113,11 @@ $(document).ready(function () {
         
     });
     
-     $('#obvious').on('click', function () {
+    $('#play').on('click', function () {
         
-           obvious();
-        
-
+           tweenKinetic();
     });
+    
     
     //Alert window when refreshing page. commented out for the moment during developement
    /* window.onbeforeunload = function () {
@@ -194,19 +193,18 @@ function addImage(stage){
             stroke: "#666",
             name: 'rotate',
             strokeWidth: 1,
-            draggable : true
+            draggable : true,
+            dragBoundFunc: (function (pos) {
+                var groupPos = group.getPosition();
+                var rotation = degrees (angle (groupPos.x, groupPos.y, pos.x, pos.y));
+                group.setRotationDeg (rotation);
+    
+                return pos;
+        })
         });
 
        
-    
-        rotate.setDragBoundFunc (function (pos) {
-           var groupPos = group.getPosition();
-           var rotation = degrees (angle (groupPos.x, groupPos.y, pos.x, pos.y));
-           group.setRotationDeg (rotation);
-    
-           layer.draw();
-           return pos;
-        });
+   
         
         
         
@@ -241,7 +239,8 @@ function addImage(stage){
             var pos = rotate.getPosition();
             console.log("end x: " + pos.x + " end y: " + pos.y + " ");
         });
-    
+        
+      
     }; 
     
     var imageObject = new newImage(src, name, stage, layer);
@@ -274,6 +273,22 @@ function newImage(url, name, stage, layer) { //Image constructor function
     this.imageName = name;
     this.imageStage = stage;
     this.imageLayer = layer;
+}
+
+function newRelationship(parentId, childId, parentName, childName, parentLayer, childLayer) { //Relationships Constructor
+    var pId;
+    var cId;
+    var pName;
+    var cName;
+    var pLayer;
+    var cLayer;
+    
+    this.pId = parentId;
+    this.cId = childId;
+    this.pName = parentName;
+    this.cName = childName;
+    this.pLayer = parentLayer;
+    this.cLayer = childLayer;
 }
 
 
@@ -526,11 +541,11 @@ function storeTimeline(group){
                 return;
         }
         var i=0;
-        timeline[selection] = new Array(allImages.length);
-        for(i;i<allImages.length;i++){
-            var layer = allImages[i].imageLayer.getLayer();
-            var src = allImages[i].imageLink;
-            var visible = allImages[i].imageLayer.getVisible();
+        timeline[selection] = new Array(relationships.length);
+        for(i;i<relationships.length;i++){
+            var layer = relationships[i].imageLayer.getLayer();
+            var src = layer.children[0].children[0].src;
+            var visible = relationships[i].imageLayer.getVisible();
             
             console.log(layer.children[0].getRotationDeg());
             
@@ -681,7 +696,7 @@ function saveGif(){
 
       for (var i = 0; i < timeline.length; i++) { //outer loop timeline entries
           
-          var layer = allImages[0].imageLayer.getLayer();
+          var layer = relationships[0].imageLayer.getLayer();
           var group = layer.children[0];
           var offsetX = group.getOffsetX();
           var offsetY = group.getOffsetY();
@@ -722,19 +737,20 @@ function saveGif(){
                           
                           if(visible){                   
                             ctx.save();
-                            
+                            //ctx.clearRect(0, 0, 1000, 600);
                             if (nRotation == pRotation) {
                                 ctx.translate(nx, ny);
                             } else {
                                 ctx.translate(x, y);
                             } 
+                            
                             ctx.translate(offsetX, offsetY);
                             ctx.rotate(nRotation);
-                            ctx.drawImage(imgObj, -offsetX, -offsetY, nWidth, nHeight);
+                            ctx.drawImage(imgObj, -offsetX, -offsetY, nWidth, nHeight);                        
                             ctx.restore();
                           }
                       }
-                      encoder.addFrame(ctx, {delay:1000 / fps,copy: true});
+                      encoder.addFrame(ctx, {delay:1000 / fps, copy: true});
                       ctx.clearRect(0, 0, 1000, 600);
                       ctx.drawImage(imageObj, 0, 0, 1000, 600);
                   }
@@ -770,7 +786,7 @@ function saveGif(){
               //add context as frame to gif encoder
               encoder.addFrame(ctx, {delay:1000 / fps, copy: true});
               //clear context for next frame
-              ctx.clearRect(0, 0, 1000, 600);
+              
               
              
           }
@@ -846,10 +862,7 @@ function saveMov(){
                             ctx.rotate(nRotation);
                             ctx.drawImage(imgObj, nx, ny, nWidth, nHeight);
                             
-                            var image = 
                             
-                            xmlhttp.open("GET","http://cs1.ucc.ie/~jdor1/private/image.php?q="+convertCanvasToImage(gifCanvas)+",n=1",true);
-                            xmlhttp.send();
                             
                           }
                       }
@@ -915,6 +928,9 @@ function saveParents(parent, child, allImages) {
      var parentGroup = parentLayer.children[0];
      var childGroup = childLayer.children[0];
      
+     var childX = childGroup.getX()/6;
+     var childY = childGroup.getY()/2;
+     
      var parentName = parentGroup.getName();
      var childName = childGroup.getName();
      
@@ -924,6 +940,8 @@ function saveParents(parent, child, allImages) {
         parentGroup.add(childGroup);
               
         parentLayer.add(torsoGroup);
+        
+        childGroup.setPosition(childX, childY);
         
         //childGroup.setPosition(parentGroup.x-100,parentGroup.y-100);
         
@@ -940,6 +958,14 @@ function saveParents(parent, child, allImages) {
         
         console.log("Parent: " + parent + ", Child: " + child + " , parent name: " + parentName + ", child name: " + childName);
         
+        
+        var relationship = newRelationship(parent, child, parentName, childName, parentLayer, childLayer);
+        
+        relationship[count] = relationship;
+        
+        if (count == allImages.length - 1){
+            alert("Image Inheritances Completed");
+        }
       
       
      $("#saveParents").css({ "background": "#E6E6E6" });
@@ -1019,4 +1045,25 @@ function obvious() {
     alert("Obvious Complete");
     
     
+}
+
+function tweenKinetic(){
+    
+    var layer = allImages[0].imageLayer.getLayer();
+    var group = layer.children[0];
+    
+    var amplitude = 10;
+      var period = 1000;
+      // in ms
+      var centerX = group.getX();
+    var animation = new Kinetic.Animation( function(frame){
+        group.setX(amplitude * Math.sin(frame.time * 2 * Math.PI / period) + centerX);
+    }, layer);
+    
+    animation.start();
+    
+    $('#pause').on('click', function () {
+        
+           animation.stop();
+    });
 }
