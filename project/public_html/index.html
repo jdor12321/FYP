@@ -11,11 +11,8 @@
 		<script src="js/kinetic4.7.4.js"></script>
 		<script src="js/jquery.js"></script>
 		<script src="js/kinetic.js"></script>
-		<script src="js/b64.js"></script>
+		<script src="js/base64.js"></script>
                 <script src="js/canvas2image.js"></script>
-		<!--<script src="js/LZWEncoder.js"></script>
-		<script src="js/NeuQuant.js"></script>
-		<script src="js/GIFEncoder.js"></script>-->
                 <script src="js/gif.js"></script>
 		<script src="js/gif.worker.js"></script>
 		<link rel="stylesheet" href="stylesheets/styles.css" />
@@ -33,6 +30,7 @@
     		    </div>
 	          <h3>Add Images</h3>
     		    <div>
+                        <p style='background-color:white;'><strong>Note:</strong> When using inheritances, please import the main image first (example: the <strong>torso</strong> of a person)</p>
 		        <input type="file" name="img" id="uploadimage" />
 		        <button type="button" id="addImg">Add to Canvas</button>
     		    </div>
@@ -45,23 +43,27 @@
                   
                   <h3>Assign a Parent</h3>
                         <div>
-                            <p style='background-color:white;'><strong>Note:</strong> "Something about assigning parents"</p>
+                            <p style='background-color:white;'><strong>Note:</strong> Use this tab to use the images on the the stage to have an inheritance (ex: parts of a human body). If an image has no relavnt inheritances, select the parent as itself and no inheritances for that image will be noted</p>
 		          <ol id = "parents">
 		          </ol>
+
+
                             <button type="button" id="saveParents">Save Parents</button>
-                            <button type="button" id="obvious">Obvious</button>
 		        </div>
                   
-                  <h3>Animation Controls</h3>
+                  <h3>Inheritance Information</h3>
                         <div>
-                            <button type="button" id="play">Play</button>
-                            <button type="button" id="pause">Pause</button>
-                            <button type="button" id="rev">Reverse</button>
-                            <button type="button" id="reset">Reset</button>
+                            <p style='background-color:white;'><strong>Note:</strong> List of Inheritances, the child will inherit all movement and rotation of the parent</p>
+		          <ol id = "inheritances">
+		          </ol>
 		        </div>
                   
+                              
 	          <h3>Canvas Adjustments</h3> 
 		        <div>
+                            <button id="play">Play</button>
+                            <button id="pause">Stop</button>
+                            <div id = "state"></div>
 		          <button id="up">
                             Reset Animation
 		          </button>

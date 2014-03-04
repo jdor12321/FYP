@@ -27,7 +27,7 @@ $(document).ready(function() {
         });
         $("#mov").button({
                 icons: {
-                    primary: "wand"
+                    primary: "mov"
                 }
         });
          $("#rotateButton").button({
@@ -45,5 +45,22 @@ $(document).ready(function() {
                 primary: "lens"
             }
         });
+        $("#play").button({
+            icons: {
+                primary: "ui-icon-play"
+            }
+        });
+        $("#pause").button({
+            icons: {
+                primary: "ui-icon-stop"
+            }
+        });
+        $("#saveParents").button({
+            icons: {
+                primary: "wand"
+            }
+        });
+        
+         
 });
 

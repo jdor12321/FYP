@@ -181,6 +181,11 @@ body{
     width:20px;
     height:20px;  
 }
+.mov {
+    background-image: url("../images/movrz.png") !important;
+    width:20px;
+    height:20px;  
+}
 #overlay{
     position: fixed;
     top: 0;
@@ -217,4 +222,7 @@ body{
     border: solid 1px #E6E6E6;
     border-radius: 4px;
     padding-right: 25px;
+}
+.parentListItem {
+    border: red solid 2px;
 }

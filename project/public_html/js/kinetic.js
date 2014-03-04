@@ -12,6 +12,7 @@ var stop = false;
 var i;
 var count = 0;
 var relationships = new Array();
+var checked = new Array();
 
 $(document).ready(function () {
 
@@ -298,8 +299,8 @@ function addLayers(layerName, layerId){  //creates layer UI
 }
 
 function assignParents(layerName, layerId){  //creates layer UI
-    $("#parents").append("<li id=\"" + layerId + "\" class=\"ui-state-default\" onclick=\"selected(this.id)\">\n\
-    <span class=\"ui-icon picture\"></span>" + "&nbsp;" + layerName + "</li> Parent: <select class=\"layersList\"></select>");
+    $("#parents").append("<div class=\"parentListItem\"><li id=\"" + layerId + "\" class=\"ui-state-default\" onclick=\"selected(this.id)\">\n\
+    <span class=\"ui-icon picture\"></span>" + "&nbsp;" + layerName + "</li> Parent: <select class=\"layersList\"></select> <br /><input type=\"checkbox\" class=\"sendToBack\" id=\""+layerId+"\"/> <label style='background-color:white;' for=\"sendToBack\">Behind " +allImages[0].imageName+ "?</label></div><br />");
     
     populateList(layerId, layerName, images);
 }
@@ -372,12 +373,7 @@ function resetSortableIds(){
     {
         $("#sortable").children().eq(i).attr("id", i);
     }
-    
-    var childrenCount = $("#parents").children().length;
-    for(var i = 0; i<childrenCount; i++)
-    {
-        $("#parents").children().eq(i).attr("id", i);
-    }
+
 }
 
 function update(group, activeAnchor) {
@@ -541,11 +537,11 @@ function storeTimeline(group){
                 return;
         }
         var i=0;
-        timeline[selection] = new Array(relationships.length);
-        for(i;i<relationships.length;i++){
-            var layer = relationships[i].imageLayer.getLayer();
-            var src = layer.children[0].children[0].src;
-            var visible = relationships[i].imageLayer.getVisible();
+        timeline[selection] = new Array(allImages.length);
+        for(i;i<allImages.length;i++){
+            var layer = allImages[i].imageLayer.getLayer();
+            var src = allImages[i].imageLink;
+            var visible = allImages[i].imageLayer.getVisible();
             
             console.log(layer.children[0].getRotationDeg());
             
@@ -696,7 +692,7 @@ function saveGif(){
 
       for (var i = 0; i < timeline.length; i++) { //outer loop timeline entries
           
-          var layer = relationships[0].imageLayer.getLayer();
+          var layer = allImages[0].imageLayer.getLayer();
           var group = layer.children[0];
           var offsetX = group.getOffsetX();
           var offsetY = group.getOffsetY();
@@ -743,14 +739,13 @@ function saveGif(){
                             } else {
                                 ctx.translate(x, y);
                             } 
-                            
                             ctx.translate(offsetX, offsetY);
                             ctx.rotate(nRotation);
                             ctx.drawImage(imgObj, -offsetX, -offsetY, nWidth, nHeight);                        
                             ctx.restore();
-                          }
+                         }
                       }
-                      encoder.addFrame(ctx, {delay:1000 / fps, copy: true});
+                      encoder.addFrame(ctx, {delay:1000 / fps,copy: true});
                       ctx.clearRect(0, 0, 1000, 600);
                       ctx.drawImage(imageObj, 0, 0, 1000, 600);
                   }
@@ -786,7 +781,7 @@ function saveGif(){
               //add context as frame to gif encoder
               encoder.addFrame(ctx, {delay:1000 / fps, copy: true});
               //clear context for next frame
-              
+              ctx.clearRect(0, 0, 1000, 600);
               
              
           }
@@ -934,6 +929,7 @@ function saveParents(parent, child, allImages) {
      var parentName = parentGroup.getName();
      var childName = childGroup.getName();
      
+     //var layerId = allImages.length;
         
         
      
@@ -954,20 +950,93 @@ function saveParents(parent, child, allImages) {
 
         parentLayer.draw();
 
-        count++;
+        
         
         console.log("Parent: " + parent + ", Child: " + child + " , parent name: " + parentName + ", child name: " + childName);
         
         
-        var relationship = newRelationship(parent, child, parentName, childName, parentLayer, childLayer);
+        relationships[count] = new newRelationship(parent, child, parentName, childName, parentLayer, childLayer);
         
-        relationship[count] = relationship;
+             
+        count++;
+        
+        
+           
+        
+
         
         if (count == allImages.length - 1){
-            alert("Image Inheritances Completed");
-        }
+            
+            $('.sendToBack:checkbox:checked').each(function () {
+               var sThisVal = this.id;
+               checked[checked.length] = sThisVal;
+               console.log(sThisVal);
+            });
+            
+            for (var i = 0; i < count; i++){
+                
+               var parentIn = relationships[i].pId;
+               var childIn = relationships[i].cId;
+                
+               var childNameIn = relationships[i].cName;
+               
+                           
+                
+               $("#sortable").children().eq(childIn).remove();
+               $("#sortable").children().eq(parentIn).append(", " + childNameIn);
+               
+               
+               
+                
+            }
+            
+            for(var i = 0; i < checked.length; i++){
+                   var pos = checked[i]-1;
+                
+                   var parentChecked = relationships[pos].pId;
+                   var childChecked = relationships[pos].cId;
+                
+                   var childNameChecked = relationships[pos].cName;
+                
+                   var childLayerChecked = relationships[pos].cLayer.getLayer();
+                   var childGroupChecked = childLayerChecked.children[0];
+                   
+                   var parentLayerChecked = relationships[0].pLayer.getLayer();
+                   var parentGroupChecked = childLayerChecked.children[0];
+                   var parentSrcChecked = allImages[0].imageLink;
+                   
+//                   if (parentChecked == 0) {
+//                       var parentLayerChecked = relationships[pos].pLayer.getLayer();
+//                       var parentGroupChecked = parentLayerChecked.children[0];
+//                       
+//                       parentLayerChecked.moveToTop();
+//                       parentGroupChecked.moveToTop();
+//                       
+//                   }
+
+                   childLayerChecked.moveDown();
+                   childGroupChecked.moveDown();
+
+                   if(i == 0){
+                       parentGroupChecked.moveToTop();
+                       parentLayerChecked.moveToTop();
+                       
+                   }
+                                   
+                   
+                   
+                   
+                   
+                }
+               alert("Image Inheritances Completed");
+            }
+            
+        
+        $("#inheritances").append("<li style='background-color:white;' >Parent: " + parentName + "<br />Child: " + childName + "</li><br />");
+        
       
-      
+//      $("ul").append("<li onclick=\"visible(this.id)\" id=\"" + parent + "\" class=\"ui-state-default\">\n\
+//      <span class=\"ui-icon picture\"></span>" + "&nbsp;" + parentName + ", " + childName + "</li>");
      $("#saveParents").css({ "background": "#E6E6E6" });
     
 }
@@ -1052,12 +1121,14 @@ function tweenKinetic(){
     var layer = allImages[0].imageLayer.getLayer();
     var group = layer.children[0];
     
-    var amplitude = 10;
+    var angularSpeed = 360 / 4;
+    var amplitude = 100;
       var period = 1000;
       // in ms
       var centerX = group.getX();
     var animation = new Kinetic.Animation( function(frame){
-        group.setX(amplitude * Math.sin(frame.time * 2 * Math.PI / period) + centerX);
+        //group.setX(amplitude * Math.sin(frame.time * 2 * Math.PI / period) + centerX);
+        group.rotate(frame.time * angularSpeed / 1000);
     }, layer);
     
     animation.start();
