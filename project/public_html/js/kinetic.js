@@ -116,7 +116,13 @@ $(document).ready(function () {
     
     $('#play').on('click', function () {
         
-           tweenKinetic();
+        
+           if(allImages.length == 0){
+             alert("No Images have been added to the stage. Please add images before continuing");
+           } else {
+             tweenKinetic();  
+           }
+           
     });
     
     
@@ -181,11 +187,6 @@ function addImage(stage){
             draggable: true
         });
         
-       function linePoints (dis) {return [
-    [group.getWidth() * group.getScale().x + 7, group.getOffset().y],
-    [group.getWidth() * group.getScale().x + Math.max (dis, 7), group.getOffset().y]
-  ]};
-        
         var rotate = new Kinetic.Circle({
             x: imageObj.width/1.25,
             y: imageObj.height/4,
@@ -198,10 +199,10 @@ function addImage(stage){
             dragBoundFunc: (function (pos) {
                 var groupPos = group.getPosition();
                 var rotation = degrees (angle (groupPos.x, groupPos.y, pos.x, pos.y));
-                group.setRotationDeg (rotation);
+                group.setRotationDeg(rotation);
     
                 return pos;
-        })
+            })
         });
 
        
@@ -390,7 +391,8 @@ function update(group, activeAnchor) {
     var centreX = group.getOffsetX();
     var centreY = group.getOffsetY();
     
-    var absolute = group.getPosition();
+    var posX;
+    var posY;
 
     var width = group.getWidth();
     var height = group.getHeight();
@@ -442,11 +444,15 @@ function update(group, activeAnchor) {
               
         case "centre":
               
-              //group.setOffset({x:anchorX, y:anchorY});
+              activeAnchor.on("dragstart", function(){
+                posX = group.getX();
+                posY = group.getY();
+              });
               
               activeAnchor.on("dragend", function(){
-                 group.setOffset(anchorX, anchorY);
-                 
+                group.setOffset(anchorX, anchorY);
+                group.setX(posX);
+                group.setY(posY);
               });
               
               group.setPosition(topLeft.x, topLeft.y);
@@ -594,6 +600,10 @@ function storeTimeline(group){
 
 function tween(frames, oldFrames, difference){   //retrieve current keyframe, old keyframe and time difference between them for new frames
     var counter = 0;
+    var posIx = 0;
+    var posQx = 0;
+    var posIy = 0;
+    var posQy = 0;
     tweenedFrames = new Array();
      for (var i = 0; i < oldFrames.length; i++) {
         for (var q = 0; q < frames.length; q++) {  
@@ -601,12 +611,49 @@ function tween(frames, oldFrames, difference){   //retrieve current keyframe, ol
             if (frames[q].src == oldFrames[i].src) {       //check if the two array indexes are refering to the same image
                 var framesNeeded = difference * fps;  //this sets 5fps 
 
+//if (nRotation == pRotation) {
+//                                ctx.translate(nx, ny);
+//                            } else {
+//                                ctx.translate(x, y);
+//                            } 
+
+                //get oldFrame rotation and next user sets rotation, then calculate the new rotation for first tweened frame
+                
+                var rotation = oldFrames[i].rotation;
+                console.log("OldFrame: " + rotation);
+                var nextRotation = frames[q].rotation;
+                console.log("NextFrame: " + nextRotation);
+                var newRotation = Math.round((rotation + ((nextRotation - rotation) / framesNeeded)));
+                console.log("newRotation: " + newRotation);
+
                 //get oldFrame x coord and next user set x coord, then calculate the new coord for first tweened frame
                 var x = oldFrames[i].x;
-                var nextX = frames[q].x;
+                var nextX = frames[q].x;               
+//                if(rotation == nextRotation){
+//                    posIx = i;
+//                    posQx = q;
+//                    var x = oldFrames[i].x;
+//                    var nextX = frames[q].x;
+//                
+//                } else {
+//                    x = oldFrames[posIx].x;
+//                    nextX = frames[posQx].x;
+//                }
                 var newX = Math.round((x + ((nextX - x) / framesNeeded)));
 
                 //get oldFrame y coord and next user set y coord, then calculate the new coord for first tweened frame
+//                if(rotation == nextRotation){
+//                    console.log("true");
+//                    posIy = i;
+//                    posQy = q;
+//                    var y = oldFrames[i].y;
+//                    var nextY = frames[q].y;
+//                
+//                } else {
+//                    console.log("false");
+//                    y = oldFrames[posIy].y;
+//                    nextY = frames[posQy].y;
+//                }
                 var y = oldFrames[i].y;
                 var nextY = frames[q].y;
                 var newY = Math.round((y + ((nextY - y) / framesNeeded)));
@@ -621,14 +668,7 @@ function tween(frames, oldFrames, difference){   //retrieve current keyframe, ol
                 var nextHeight = frames[q].height;
                 var newHeight = Math.round((height + ((nextHeight - height) / framesNeeded)));
                 
-                //get oldFrame rotation and next user sets rotation, then calculate the new rotation for first tweened frame
                 
-                var rotation = oldFrames[i].rotation;
-                console.log("OldFrame: " + rotation);
-                var nextRotation = frames[q].rotation;
-                console.log("NextFrame: " + nextRotation);
-                var newRotation = Math.round((rotation + ((nextRotation - rotation) / framesNeeded)));
-                console.log("newRotation: " + newRotation);
                 
                 tweenedFrames[counter] = new Array();
                 for (var j = 0; j < framesNeeded - 1; j++) {
@@ -638,7 +678,7 @@ function tween(frames, oldFrames, difference){   //retrieve current keyframe, ol
                         y: newY,
                         width: newWidth,
                         height: newHeight,
-                        rotation: radians(newRotation),
+                        rotation: newRotation,
                         src: frames[q].src,
                         visible: oldFrames[i].visible
                     };
@@ -667,6 +707,9 @@ function saveGif(){
       	fps = 5;
       }
       var imageObj = new Image();      
+      
+      var stage = allImages[0].imageStage.getStage();
+      var objects = stage.getChildren();
       
       gifCanvas = document.getElementById("gifOutput");
       ctx = gifCanvas.getContext("2d"); 
@@ -721,28 +764,52 @@ function saveGif(){
                       for (var f = 0; f < tweenedFrames.length; f++) {
                           var nx = tweenedFrames[f][j].x;
                           var ny = tweenedFrames[f][j].y;
+                          var px = nx;
+                          var py = ny;
                           var nWidth = tweenedFrames[f][j].width;
                           var nHeight = tweenedFrames[f][j].height;
                           var nRotation = tweenedFrames[f][j].rotation;
                           var pRotation = nRotation;  
-                          if (j != 0) {
-                              pRotation = tweenedFrames[f][j-1].rotation;
-                          }
+//                          if (j != 0) {
+//                              px = tweenedFrames[f][j-1].x;
+//                              py = tweenedFrames[f][j-1].y;
+//                              pRotation = tweenedFrames[f][j-1].rotation;
+//                          }
                           imgObj.src = tweenedFrames[f][j].src;
                           var visible = tweenedFrames[f][j].visible;
                           
                           if(visible){                   
                             ctx.save();
                             //ctx.clearRect(0, 0, 1000, 600);
-                            if (nRotation == pRotation) {
-                                ctx.translate(nx, ny);
-                            } else {
-                                ctx.translate(x, y);
-                            } 
+//                            if (nRotation == pRotation && px == nx && py == ny) {
+//                                ctx.translate(nx, ny);
+//                            } else {
+//                                ctx.translate(x, y);
+//                            } 
+                            ctx.translate(nx,ny);
                             ctx.translate(offsetX, offsetY);
-                            ctx.rotate(nRotation);
+                            ctx.rotate(radians(nRotation));
                             ctx.drawImage(imgObj, -offsetX, -offsetY, nWidth, nHeight);                        
                             ctx.restore();
+                            
+                            for (var z = 0; z < objects.length; z++){
+                                console.log("length: " + objects.length + "z: " + z);
+                                if (z == 0) {
+                                    var torsoLayer = objects[z].getLayer();
+                                    var torsoGroup = torsoLayer.children[0];
+                                    if (torsoGroup.getName != 'torso.png') {
+                                        alert("You MUST import the torso image FIRST");
+                                        
+                                    }
+                                }else {
+                                    console.log(z + ": here");
+                                    var layer = objects[z].getLayer();
+                                    var layerGroup = layer.children[0].children[0];
+                                        
+                                    layerGroup.setRotationDeg(nRotation);
+                                    
+                            }
+                        }
                          }
                       }
                       encoder.addFrame(ctx, {delay:1000 / fps,copy: true});
@@ -770,7 +837,7 @@ function saveGif(){
                     ctx.save();
                     ctx.translate(x, y);
                     ctx.translate(offsetX, offsetY);
-                    ctx.rotate(rotation);
+                    ctx.rotate(radians(rotation));
                     ctx.drawImage(imgObj, -offsetX, -offsetY, width, height);
                     ctx.restore();
                   }
@@ -818,7 +885,7 @@ function saveMov(){
       var imageObj = new Image();      
       
       gifCanvas = document.getElementById("gifOutput");
-      ctx = gifCanvas.getContext("2d"); 
+      ctx1 = gifCanvas.getContext("2d"); 
       var xmlhttp=new XMLHttpRequest();
     
     for (var i = 0; i < timeline.length; i++) { //outer loop timeline entries
@@ -854,6 +921,9 @@ function saveMov(){
                           var visible = tweenedFrames[f][j].visible;
                           
                           if(visible){
+                            ctx.save();
+                            ctx.translate(x,y);
+                            ctx
                             ctx.rotate(nRotation);
                             ctx.drawImage(imgObj, nx, ny, nWidth, nHeight);
                             
@@ -934,8 +1004,9 @@ function saveParents(parent, child, allImages) {
         
      
         parentGroup.add(childGroup);
-              
+        
         parentLayer.add(torsoGroup);
+
         
         childGroup.setPosition(childX, childY);
         
@@ -944,13 +1015,19 @@ function saveParents(parent, child, allImages) {
        //parentLayer.setPosition(childGroup.x,childGroup.y);
         
         
+        childGroup.get(".rotate")[0].setdragBoundFunc( (function (pos) {
+                var groupPos = childGroup.getPosition();
+                var rotation = degrees (angle (groupPos.x, groupPos.y, pos.x, pos.y));
+                childGroup.setRotationDeg(rotation*2);
+    
+                return pos;
+            }));
         
-        
-       // childLayer.hide();
+        //childLayer.hide();
 
         parentLayer.draw();
-
         
+       
         
         console.log("Parent: " + parent + ", Child: " + child + " , parent name: " + parentName + ", child name: " + childName);
         
