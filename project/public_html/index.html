@@ -85,6 +85,8 @@
 				  <button type="button" id="gif">Create Animated GIF</button>
                                   <p><strong>OR</strong></p>
                                   <button type="button" id="mov">Create Animated MOV</button>
+                                  
+                                  
 		        </div>
                    
                    <h3>Usage Tips</h3>
@@ -100,14 +102,18 @@
 						<li>Your animation can be saved in either a GIF file or a MOV file under the "Save Animation" Tab. </li>
                     </ol>
 		        </div>
+                   
+                   
             </div>
             <ol id="time"><li>0</li><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li><li>6</li><li>7</li><li>8</li><li>9</li><li>10</li></ol>
             <input type="text" id="amountHidden"/>
             <div id="slider-range-max"></div>
             <div id="keyframeDiv"><input type="submit" value="Add Keyframe" id="keyframe" onclick="storeTimeline()"/>
 			</div>
+            
 	    </div>
         <canvas id="gifOutput" width="1000" height="600"></canvas>
-        <div id="overlay"><img id="loading" src="images/loading.gif" alt="loading..." /></div>
+        <div id="overlay"><img id="loading" src="images/loading.gif" alt="loading..." /><div id = "bar"><p>Progress Bar:</p><div id="progressbar" style="background-color:white;"></div><p id="percent">0% Complete</p><p id="timeSec"></p><p id="msg"></p></div></div>
+        
      </body>
 </html>

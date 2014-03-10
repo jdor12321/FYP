@@ -226,3 +226,22 @@ body{
 .parentListItem {
     border: red solid 2px;
 }
+
+#bar {
+    border: black solid 3px;
+    border-radius: 10px;
+    top: 200px;
+    left: 130px;
+    padding: 0px 10px 0px 10px;
+    width: 50%;
+    position:absolute;
+}
+
+#bar p {
+    text-align:center;
+}
+
+#progressbar .ui-widget-header{
+    background-image: none !important;
+    background-color: yellow !important;
+}

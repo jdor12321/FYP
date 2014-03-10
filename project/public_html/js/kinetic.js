@@ -13,6 +13,7 @@ var i;
 var count = 0;
 var relationships = new Array();
 var checked = new Array();
+var progress = 1;
 
 $(document).ready(function () {
 
@@ -36,10 +37,16 @@ $(document).ready(function () {
             setTimeout(function () {
                 saveGif();
             }, 1000);
+            
+            
+            
         }
         else {
             alert("Your animation doesn't have any keyframes, please set keyframes using the timeline.");
         }
+    });
+    $( "#progressbar" ).progressbar({
+                value: 0
     });
     $('#mov').on('click', function () {
         if (timeline.length > 0) {
@@ -145,16 +152,28 @@ function addImage(stage){
     
       
     imageObj.onload = function() {
+        
+        var group = new Kinetic.Group({
+            x: imageObj.width/4,
+            y: imageObj.height/4,
+            width: imageObj.width,
+            height: imageObj.height,
+            draggable: true,
+            name: 'group',
+            scale: 1
+            
+        });
+        
       var myImage = new Kinetic.Image({
           image: imageObj,
-          x: stage.getWidth, 
-          y: stage.getHeight, 
+          //x: group.getWidth, 
+         // y: group.getHeight, 
           width: imageObj.width / 2,
           height: imageObj.height / 2,
           stroke: 'black',
           strokeWidth: 10,
           name: "image",
-          id: allImages.length
+          id: allImages.length,
         });
         
                 
@@ -177,15 +196,7 @@ function addImage(stage){
         
        // var points = myImage.getPosition();
         
-        var group = new Kinetic.Group({
-            x: imageObj.width/4,
-            y: imageObj.height/4,
-            width: imageObj.width,
-            height: imageObj.height,
-            name: 'group',
-            scale: 1,
-            draggable: true
-        });
+
         
         var rotate = new Kinetic.Circle({
             x: imageObj.width/1.25,
@@ -373,7 +384,34 @@ function resetSortableIds(){
     for(var i = 0; i<childrenCount; i++)
     {
         $("#sortable").children().eq(i).attr("id", i);
+        $("#parents").children().eq(i).attr("id", i);
     }
+    $("#parents").sort();
+    
+    
+    var parentCount = $(".layersList")[0].length;
+    
+    
+    
+        for(var i = 0; i < allImages.length; i++ ){
+            var selectbox = $(".layersList")[i]
+            for(var j = 0; j < parentCount; j++)
+            {
+               selectbox.remove(i);
+            }
+        }
+        
+        for (var i = 0; i <= allImages.length; i++){
+            for (var j = 0; j < allImages.length; j++){
+                var list = document.getElementsByClassName('layersList')[i];
+                list.options[j] = new Option(allImages[j].imageName, j);
+            }
+        }
+        
+        
+
+    
+    console.log(parentCount);
 
 }
 
@@ -401,58 +439,48 @@ function update(group, activeAnchor) {
          case 'topLeft':
               topRight.setY(anchorY);
               bottomLeft.setX(anchorX);
-              centreY = topRight.getY();
-              centreX = bottomLeft.getX();
-              centre.setX(centreX);
-              centre.setY(centreY);
-             // centre.setY(centreY);
-             // centre.setX(centreX);
+//              centreY = topRight.getY();
+//              centreX = bottomLeft.getX();
+//              centre.setX(centreX);
+//              centre.setY(centreY);
               break;
               
         case 'topRight':
               bottomRight.setX(anchorX);
               topLeft.setY(anchorY);
               
-              centreX = anchorX/1;
-              centreY = anchorY*2;
-              centre.setX(centreX);
-              centre.setY(centreY);
-             // centre.setY(centreY);
-             // centre.setX(centreX);
+//              centreX = anchorX/1;
+//              centreY = anchorY*2;
+//              centre.setX(centreX);
+//              centre.setY(centreY);
+
               break;
               
         case 'bottomRight':
               bottomLeft.setY(anchorY);
               topRight.setX(anchorX);
-              centreX = anchorX/2;
-              centreY = anchorY/2;
-              centre.setX(centreX);
-              centre.setY(centreY);
-              //centre.setY(centreX/anchorX);
-              //centre.setX(centreY/anchorY);
-              //group.setOffset(centreX/anchorX, centreY/anchorY);
+//              centreX = anchorX/2;
+//              centreY = anchorY/2;
+//              centre.setX(centreX);
+//              centre.setY(centreY);
+//              //centre.setY(centreX/anchorX);
+//              //centre.setX(centreY/anchorY);
+//              //group.setOffset(centreX/anchorX, centreY/anchorY);
               break;
               
         case 'bottomLeft':
               bottomRight.setY(anchorY);
               topLeft.setX(anchorX);
-              centreY = (topRight.getY() - bottomRight.getY())/2;
-              centreX = (topRight.getX() - topLeft.getX())/2;
-              centre.setX(centreX);
-              centre.setY(centreY);
+//              centreY = (topRight.getY() - bottomRight.getY())/2;
+//              centreX = (topRight.getX() - topLeft.getX())/2;
+//              centre.setX(centreX);
+//              centre.setY(centreY);
               break;
               
         case "centre":
               
-              activeAnchor.on("dragstart", function(){
-                posX = group.getX();
-                posY = group.getY();
-              });
-              
               activeAnchor.on("dragend", function(){
                 group.setOffset(anchorX, anchorY);
-                group.setX(posX);
-                group.setY(posY);
               });
               
               group.setPosition(topLeft.x, topLeft.y);
@@ -460,8 +488,6 @@ function update(group, activeAnchor) {
       }
       
       
-    var offsetX = group.getOffsetX();
-    var offsetY = group.getOffsetY();
 
     image.setPosition({x:topLeft.getX(), y:topLeft.getY()});
 
@@ -815,6 +841,8 @@ function saveGif(){
                       encoder.addFrame(ctx, {delay:1000 / fps,copy: true});
                       ctx.clearRect(0, 0, 1000, 600);
                       ctx.drawImage(imageObj, 0, 0, 1000, 600);
+                      
+
                   }
               }
               // ctx.drawImage(imageObj,0,0,300,150);*/
@@ -852,15 +880,59 @@ function saveGif(){
               
              
           }
+          
+//                            progress = ((i/(timeline.length - 1)))*100;
+//                            progress = parseInt(progress);
+//                            console.log(progress);
+//
+//              
+//                            $( "#progressbar" ).progressbar({
+//                                value: progress
+//                            });
+//                            
+//                            $("progressbar").append("<p>"+progress+"Percent</p>");
+            
 
       }
       
+      var startTime;
+      var sec;
+      var calc;
+      
+      
+      
+       encoder.on('start', function() {
+            var d1 = new Date();
+            startTime = d1.getTime();
+            console.log(startTime);
+       });
+      
        encoder.on('finished', function(blob) {
-              window.open(URL.createObjectURL(blob));
+              var d2 = new Date();
+              sec = d2.getTime();
+              calc = (sec - startTime)/1000;
+              console.log(sec);
+              console.log(calc);
+              window.alert("Encoding finished in " + calc + " seconds.");
+              $('#percent').text ("100% Complete. Encoding finished in " + calc + " seconds. Your animation will open in 5 seconds.");
+              $('#timeSec').text ("Encoding finished in " + calc + " seconds.");
+              $('#msg').text ("Your animation will open in 5 seconds.");
+              
+              setTimeout(function(){window.open(URL.createObjectURL(blob));
               $("#gif").css({ "background": "#E6E6E6" });
               $("#gif").button("option", "label", "Create Animated GIF");
-              $("#overlay").css({ "display": "none" });
-            });
+              $("#overlay").css({ "display": "none" });}, 5000);
+       });
+
+       
+       encoder.on('progress', function(p) {
+            
+              $( "#progressbar" ).progressbar({
+                  value: Math.round(p * 100)
+              });
+              
+              $('#percent').text(Math.round(p * 100) + '% Complete');
+       });
 
        encoder.render();
       
@@ -934,6 +1006,15 @@ function saveMov(){
                       //encoder.addFrame(ctx, {delay:1000 / fps,copy: true});
                       ctx.clearRect(0, 0, 1000, 600);
                       ctx.drawImage(imageObj, 0, 0, 1000, 600);
+                      
+                            progress = ((j/fps))*100;
+                            progress = parseInt(progress);
+                            console.log(progress);
+
+              
+                            $( "#progressbar" ).progressbar({
+                                value: progress
+                            });
                   }
               }
               // ctx.drawImage(imageObj,0,0,300,150);*/
@@ -1015,13 +1096,13 @@ function saveParents(parent, child, allImages) {
        //parentLayer.setPosition(childGroup.x,childGroup.y);
         
         
-        childGroup.get(".rotate")[0].setdragBoundFunc( (function (pos) {
-                var groupPos = childGroup.getPosition();
-                var rotation = degrees (angle (groupPos.x, groupPos.y, pos.x, pos.y));
-                childGroup.setRotationDeg(rotation*2);
-    
-                return pos;
-            }));
+//        childGroup.get(".rotate")[0].setdragBoundFunc( (function (pos) {
+//                var groupPos = childGroup.getPosition();
+//                var rotation = degrees (angle (groupPos.x, groupPos.y, pos.x, pos.y));
+//                childGroup.setRotationDeg(rotation*2);
+//    
+//                return pos;
+//            }));
         
         //childLayer.hide();
 
@@ -1042,71 +1123,71 @@ function saveParents(parent, child, allImages) {
         
 
         
-        if (count == allImages.length - 1){
-            
-            $('.sendToBack:checkbox:checked').each(function () {
-               var sThisVal = this.id;
-               checked[checked.length] = sThisVal;
-               console.log(sThisVal);
-            });
-            
-            for (var i = 0; i < count; i++){
-                
-               var parentIn = relationships[i].pId;
-               var childIn = relationships[i].cId;
-                
-               var childNameIn = relationships[i].cName;
-               
-                           
-                
-               $("#sortable").children().eq(childIn).remove();
-               $("#sortable").children().eq(parentIn).append(", " + childNameIn);
-               
-               
-               
-                
-            }
-            
-            for(var i = 0; i < checked.length; i++){
-                   var pos = checked[i]-1;
-                
-                   var parentChecked = relationships[pos].pId;
-                   var childChecked = relationships[pos].cId;
-                
-                   var childNameChecked = relationships[pos].cName;
-                
-                   var childLayerChecked = relationships[pos].cLayer.getLayer();
-                   var childGroupChecked = childLayerChecked.children[0];
-                   
-                   var parentLayerChecked = relationships[0].pLayer.getLayer();
-                   var parentGroupChecked = childLayerChecked.children[0];
-                   var parentSrcChecked = allImages[0].imageLink;
-                   
-//                   if (parentChecked == 0) {
-//                       var parentLayerChecked = relationships[pos].pLayer.getLayer();
-//                       var parentGroupChecked = parentLayerChecked.children[0];
-//                       
-//                       parentLayerChecked.moveToTop();
+//        if (count == allImages.length - 1){
+//            
+//            $('.sendToBack:checkbox:checked').each(function () {
+//               var sThisVal = this.id;
+//               checked[checked.length] = sThisVal;
+//               console.log(sThisVal);
+//            });
+//            
+//            for (var i = 0; i < count; i++){
+//                
+//               var parentIn = relationships[i].pId;
+//               var childIn = relationships[i].cId;
+//                
+//               var childNameIn = relationships[i].cName;
+//               
+//                           
+//                
+//               $("#sortable").children().eq(childIn).remove();
+//               $("#sortable").children().eq(parentIn).append(", " + childNameIn);
+//               
+//               
+//               
+//                
+//            }
+//            
+//            for(var i = 0; i < checked.length; i++){
+//                   var pos = checked[i]-1;
+//                
+//                   var parentChecked = relationships[pos].pId;
+//                   var childChecked = relationships[pos].cId;
+//                
+//                   var childNameChecked = relationships[pos].cName;
+//                
+//                   var childLayerChecked = relationships[pos].cLayer.getLayer();
+//                   var childGroupChecked = childLayerChecked.children[0];
+//                   
+//                   var parentLayerChecked = relationships[0].pLayer.getLayer();
+//                   var parentGroupChecked = childLayerChecked.children[0];
+//                   var parentSrcChecked = allImages[0].imageLink;
+//                   
+////                   if (parentChecked == 0) {
+////                       var parentLayerChecked = relationships[pos].pLayer.getLayer();
+////                       var parentGroupChecked = parentLayerChecked.children[0];
+////                       
+////                       parentLayerChecked.moveToTop();
+////                       parentGroupChecked.moveToTop();
+////                       
+////                   }
+//
+//                   childLayerChecked.moveDown();
+//                   childGroupChecked.moveDown();
+//
+//                   if(i == 0){
 //                       parentGroupChecked.moveToTop();
+//                       parentLayerChecked.moveToTop();
 //                       
 //                   }
-
-                   childLayerChecked.moveDown();
-                   childGroupChecked.moveDown();
-
-                   if(i == 0){
-                       parentGroupChecked.moveToTop();
-                       parentLayerChecked.moveToTop();
-                       
-                   }
-                                   
-                   
-                   
-                   
-                   
-                }
+//                                   
+//                   
+//                   
+//                   
+//                   
+//                }
                alert("Image Inheritances Completed");
-            }
+            //}
             
         
         $("#inheritances").append("<li style='background-color:white;' >Parent: " + parentName + "<br />Child: " + childName + "</li><br />");
