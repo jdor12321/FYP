@@ -16,6 +16,7 @@
                 <script src="js/gif.js"></script>
 		<script src="js/gif.worker.js"></script>
 		<link rel="stylesheet" href="stylesheets/styles.css" />
+                <link rel="shortcut icon" href="http://www.ucc.ie/favicon.ico">
 	</head>
 	<body>
             <img id="banner" alt="ucc crest" src="images/banner_2.png"/>
@@ -26,7 +27,7 @@
 	          <h3>Set Background Image</h3>
     		    <div>
 		        <input type="file" name="img" id="uploadbkimage"/>
-		        <button type="button" id="bgImg">Make background</button>
+		        <button type="button" id="bgImg">Make Background</button>
     		    </div>
 	          <h3>Add Images</h3>
     		    <div>
@@ -36,14 +37,14 @@
     		    </div>
 	          <h3>Image Layers</h3>
                         <div>
-                            <p style='background-color:white;'><strong>Note:</strong> a layer can only be selected if it is visible and deselected when it's not visible.</p>
+                            <p style='background-color:white;'><strong>Note:</strong> Layering here only works properly when the "Assign a Parent" feature is not used. Layering/hiding for parent projects is currently not suported.</p>
 		          <ul id="sortable">
 		          </ul>
 		        </div>
                   
                   <h3>Assign a Parent</h3>
                         <div>
-                            <p style='background-color:white;'><strong>Note:</strong> Use this tab to use the images on the the stage to have an inheritance (ex: parts of a human body). If an image has no relavnt inheritances, select the parent as itself and no inheritances for that image will be noted</p>
+                            <p style='background-color:white;'><strong>Note:</strong> Use this tab to use the images on the the stage to have an inheritance (ex: parts of a human body). If an image has no relevant inheritances, select the parent as itself and no inheritances for that image will be noted</p>
 		          <ol id = "parents">
 		          </ol>
 
@@ -53,7 +54,7 @@
                   
                   <h3>Inheritance Information</h3>
                         <div>
-                            <p style='background-color:white;'><strong>Note:</strong> List of Inheritances, the child will inherit all movement and rotation of the parent</p>
+                            <p style='background-color:white;'><strong>Note:</strong> List of Inheritances, the child will inherit all movement and rotation of the parent noted.</p>
 		          <ol id = "inheritances">
 		          </ol>
 		        </div>
@@ -61,30 +62,53 @@
                               
 	          <h3>Canvas Adjustments</h3> 
 		        <div>
-                            <button id="play">Play</button>
+                            <!--<button id="play">Play</button>
                             <button id="pause">Stop</button>
-                            <div id = "state"></div>
+                            <div id = "state"></div>-->
 		          <button id="up">
                             Reset Animation
 		          </button>
 		        </div>
      
-	          <h3>Save Animation(GIF &amp; MOV)</h3>
+	          <h3>Save Animation</h3>
 		        <div>
+                            <p style='background-color:white;'><strong>Note:</strong>The GIF encoder uses HTML5 Web Workers in order to speed up the process of encoding. The number of workers initialized corresponds to the number of frames in the animation. Eg: 30 frames = 30 workers, 8 frames = 8 workers etc.</p>
 				  <label id="fpsLabel">Frames Per Second:</label>
 				  <select id="fps">
+                    <option>30</option>
+                    <option>29</option>
+                    <option>28</option>
+                    <option>27</option>
+                    <option>26</option>
+                    <option>25</option>
+                    <option>24</option>
+                    <option>23</option>
+                    <option>22</option>
+                    <option>21</option>
+                    <option>20</option>
+                    <option>19</option>
+                    <option>18</option>
+                    <option>17</option>
+                    <option>16</option>
+                    <option>15</option>
+                    <option>14</option>
+                    <option>13</option>
+                    <option>12</option>
+                    <option>11</option>
+                    <option>10</option>
+                    <option>9</option>
                     <option>8</option>
                     <option>7</option>
                     <option>6</option>
-					<option>5</option>
-					<option>4</option>
-					<option>3</option>
-					<option>2</option>
-					<option>1</option>
+                    <option>5</option>
+                    <option>4</option>
+                    <option>3</option>
+                    <option>2</option>
+                    <option>1</option>
 				  </select>
 				  <button type="button" id="gif">Create Animated GIF</button>
-                                  <p><strong>OR</strong></p>
-                                  <button type="button" id="mov">Create Animated MOV</button>
+                                  <!--<p><strong>OR</strong></p>
+                                  <button type="button" id="mov">Create Animated MOV</button>-->
                                   
                                   
 		        </div>

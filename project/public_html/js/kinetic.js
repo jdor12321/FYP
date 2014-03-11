@@ -69,6 +69,19 @@ $(document).ready(function () {
         $("#sortable > li").each(function (n, item) {
             $(item).remove();
         });
+        $("#parents > li").each(function (n, item) {
+            $(item).remove();
+        });
+        var listCount = $(".layersList")[0].length;
+   
+        for(var i = 0; i < listCount; i++ ){
+            $(".layersList")[i].remove();
+            $(".label")[i].remove();
+ 
+        }
+        $("#inheritances > li").each(function (n, item) {
+            $(item).remove();
+        });
         allImages = [];
         tweenedFrames = [];
         for (var i = 0; i < timeline.length; i++) {
@@ -83,6 +96,10 @@ $(document).ready(function () {
         });
         $("#amountHidden").val(0);
         $("#container div").css({ "background": "none" });
+        
+        $('#saveParents').removeAttr("disabled");
+        $("#saveParents").css({ "background": "#e6e6e6" });
+        $("#saveParents").button("option", "label", "Save Parent");
     });
     $('#sortable').sortable({
         update: function (event, ui) {
@@ -101,42 +118,43 @@ $(document).ready(function () {
     
     $('#saveParents').on('click', function () {
         
+        $('#saveParents').attr("disabled", "disabled");
+        $("#saveParents").css({ "background": "#C0C0C0" });
+        $("#saveParents").button("option", "label", "Parents feature can only be used once");
         // for loop
-        for (var i = 0; i <= allImages.length; i++) {
+        for (var i = 0; i < allImages.length; i++) {
         
-        var list = document.getElementsByClassName('layersList')[i];
+            var list = document.getElementsByClassName('layersList')[i];
+            
+            var parentLayerId = list.options[list.selectedIndex].value;
+            var childLayerId = document.getElementById("parents").getElementsByTagName("li")[i].id;
+       
+            saveParents(parentLayerId, childLayerId, allImages); 
         
-        var parentLayerId = list.options[list.selectedIndex].value;
-        
-        var childLayerId = document.getElementById("parents").getElementsByTagName("li")[i].id;
-        
-
-        saveParents(parentLayerId, childLayerId, allImages); 
-        
-        if (allImages.length == count) {
-            alert('Parents Sucessfully added');
-        }
+            if (allImages.length == count) {
+                alert('Parents Sucessfully added');
+            }
         
         }
         
     });
     
-    $('#play').on('click', function () {
-        
-        
-           if(allImages.length == 0){
-             alert("No Images have been added to the stage. Please add images before continuing");
-           } else {
-             tweenKinetic();  
-           }
-           
-    });
+//    $('#play').on('click', function () {
+//        
+//        
+//           if(allImages.length == 0){
+//             alert("No Images have been added to the stage. Please add images before continuing");
+//           } else {
+//             tweenKinetic();  
+//           }
+//           
+//    });
     
     
     //Alert window when refreshing page. commented out for the moment during developement
-   /* window.onbeforeunload = function () {
+    window.onbeforeunload = function () {
         return "Woah! Are you sure you want to do this? You will lose your animation...";
-    };*/
+    };
 
 });
 
@@ -311,8 +329,10 @@ function addLayers(layerName, layerId){  //creates layer UI
 }
 
 function assignParents(layerName, layerId){  //creates layer UI
-    $("#parents").append("<div class=\"parentListItem\"><li id=\"" + layerId + "\" class=\"ui-state-default\" onclick=\"selected(this.id)\">\n\
-    <span class=\"ui-icon picture\"></span>" + "&nbsp;" + layerName + "</li> Parent: <select class=\"layersList\"></select> <br /><input type=\"checkbox\" class=\"sendToBack\" id=\""+layerId+"\"/> <label style='background-color:white;' for=\"sendToBack\">Behind " +allImages[0].imageName+ "?</label></div><br />");
+    $("#parents").append("<li id=\"" + layerId + "\" class=\"ui-state-default\" onclick=\"selected(this.id)\">\n\
+    <span class=\"ui-icon picture\"></span>" + "&nbsp;" + layerName + "</li> <span class=\"label\">Parent: </span><select class=\"layersList\"></select> <br />");
+    
+//    <input type=\"checkbox\" class=\"sendToBack\" id=\""+layerId+"\"/> <label style='background-color:white;' for=\"sendToBack\">Behind " +allImages[0].imageName+ "?</label></div><br />" (Moved from end of assigned parents field)
     
     populateList(layerId, layerName, images);
 }
@@ -321,7 +341,7 @@ function populateList(layerId, layerName, images) {
 
 images[layerId] = layerName;
 
-for (var i = 0; i <= images.length; i++){
+for (var i = 0; i < images.length; i++){
     for (var j = 0; j < images.length; j++){
   var list = document.getElementsByClassName('layersList')[i];
   list.options[j] = new Option(images[j], j);
@@ -723,6 +743,17 @@ function tween(frames, oldFrames, difference){   //retrieve current keyframe, ol
 }
 
 function saveGif(){
+    
+      var scrollPosition = [
+        self.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft,
+        self.pageYOffset || document.documentElement.scrollTop  || document.body.scrollTop
+      ];
+    
+      var html = jQuery('html'); // it would make more sense to apply this to body, but IE7 won't have that
+      html.data('scroll-position', scrollPosition);
+      html.data('previous-overflow', html.css('overflow'));
+      html.css('overflow', 'hidden');
+  
   
       try{
       	fps = $("#fps").val();
@@ -741,7 +772,7 @@ function saveGif(){
       ctx = gifCanvas.getContext("2d"); 
       
       var encoder = new GIF({
-          workers: 5,
+          workers: fps,
           workerScript: '/project/js/gif.worker.js',
           quality: 10,
           setRepeat: 0,
@@ -901,27 +932,41 @@ function saveGif(){
       
       
       
+      
+      
        encoder.on('start', function() {
+      
+      window.scrollTo(scrollPosition[0], scrollPosition[1]);
             var d1 = new Date();
             startTime = d1.getTime();
             console.log(startTime);
+              
+              $('#timeSec').text ("");
+              $('#msg').text ("");
        });
       
        encoder.on('finished', function(blob) {
+       
               var d2 = new Date();
               sec = d2.getTime();
               calc = (sec - startTime)/1000;
               console.log(sec);
               console.log(calc);
               window.alert("Encoding finished in " + calc + " seconds.");
-              $('#percent').text ("100% Complete. Encoding finished in " + calc + " seconds. Your animation will open in 5 seconds.");
+              $('#percent').text ("100% Complete.");
               $('#timeSec').text ("Encoding finished in " + calc + " seconds.");
               $('#msg').text ("Your animation will open in 5 seconds.");
               
               setTimeout(function(){window.open(URL.createObjectURL(blob));
               $("#gif").css({ "background": "#E6E6E6" });
               $("#gif").button("option", "label", "Create Animated GIF");
-              $("#overlay").css({ "display": "none" });}, 5000);
+              $("#overlay").css({ "display": "none" }); 
+              var html = jQuery('html');
+              var scrollPosition = html.data('scroll-position');
+              html.css('overflow', html.data('previous-overflow'));
+              window.scrollTo(scrollPosition[0], scrollPosition[1])},
+              
+              5000);
        });
 
        
@@ -944,118 +989,118 @@ function saveGif(){
       //window.open(data_url);
 }
 
-function saveMov(){
-    
-    try{
-      	fps = $("#fps").val();
-      	fps = parseInt(fps);
-      	console.log("fps:" + fps);
-      }
-      catch(e){
-      	fps = 5;
-      }
-      var imageObj = new Image();      
-      
-      gifCanvas = document.getElementById("gifOutput");
-      ctx1 = gifCanvas.getContext("2d"); 
-      var xmlhttp=new XMLHttpRequest();
-    
-    for (var i = 0; i < timeline.length; i++) { //outer loop timeline entries
-
-          if (timeline[i] !== undefined) {
-              if (set.length > 0) {
-                  number = set.pop();
-                  var difference = i - number;
-                  set.push(i);
-              }
-              else {
-                  set.push(i);
-                  var number = i;
-                  var difference = i;
-              }     
-              imageObj.src = backgroundImageUrl;
-              ctx.drawImage(imageObj, 0, 0, 1000, 600); //set background on canvas
-
-              if (i > 0) {  //call tweening on this and previous frame
-                  tween(timeline[i], timeline[number], difference);
-
-                  console.log(tweenedFrames);
-                  for (var j = 0; j < tweenedFrames[0].length; j++) {  //inner loop object data
-
-                      //redraw images to gifCanvas using standard canvas api
-                      for (var f = 0; f < tweenedFrames.length; f++) {
-                          var nx = tweenedFrames[f][j].x;
-                          var ny = tweenedFrames[f][j].y;
-                          var nWidth = tweenedFrames[f][j].width;
-                          var nHeight = tweenedFrames[f][j].height;
-                          var nRotation = tweenedFrames[f][j].rotation;
-                          imgObj.src = tweenedFrames[f][j].src;
-                          var visible = tweenedFrames[f][j].visible;
-                          
-                          if(visible){
-                            ctx.save();
-                            ctx.translate(x,y);
-                            ctx
-                            ctx.rotate(nRotation);
-                            ctx.drawImage(imgObj, nx, ny, nWidth, nHeight);
-                            
-                            
-                            
-                          }
-                      }
-                      //encoder.addFrame(ctx, {delay:1000 / fps,copy: true});
-                      ctx.clearRect(0, 0, 1000, 600);
-                      ctx.drawImage(imageObj, 0, 0, 1000, 600);
-                      
-                            progress = ((j/fps))*100;
-                            progress = parseInt(progress);
-                            console.log(progress);
-
-              
-                            $( "#progressbar" ).progressbar({
-                                value: progress
-                            });
-                  }
-              }
-              // ctx.drawImage(imageObj,0,0,300,150);*/
-              //retrieve data for images from timeline 2-dimensional array
-              for (var index = 0; index < timeline[i].length; index++) {
-
-                  var x = timeline[i][index].x;
-                  var y = timeline[i][index].y;
-                  var width = timeline[i][index].width;
-                  var height = timeline[i][index].height;
-                  var rotation = timeline[i][index].rotation;
-
-                  var imgObj = new Image();
-
-                  imgObj.src = timeline[i][index].src;
-                  if(timeline[i][index].visible){
-                  ctx.rotate(rotation);
-                  ctx.drawImage(imgObj, x, y, width, height);   //draw image to canvas
-
-                  }
-              }
-              
-              //var image = convertCanvasToImage(gifCanvas);
-              
-              
-              
-              
-              
+//function saveMov(){
+//    
+//    try{
+//      	fps = $("#fps").val();
+//      	fps = parseInt(fps);
+//      	console.log("fps:" + fps);
+//      }
+//      catch(e){
+//      	fps = 5;
+//      }
+//      var imageObj = new Image();      
+//      
+//      gifCanvas = document.getElementById("gifOutput");
+//      ctx1 = gifCanvas.getContext("2d"); 
+//      var xmlhttp=new XMLHttpRequest();
+//    
+//    for (var i = 0; i < timeline.length; i++) { //outer loop timeline entries
+//
+//          if (timeline[i] !== undefined) {
+//              if (set.length > 0) {
+//                  number = set.pop();
+//                  var difference = i - number;
+//                  set.push(i);
+//              }
+//              else {
+//                  set.push(i);
+//                  var number = i;
+//                  var difference = i;
+//              }     
+//              imageObj.src = backgroundImageUrl;
+//              ctx.drawImage(imageObj, 0, 0, 1000, 600); //set background on canvas
+//
+//              if (i > 0) {  //call tweening on this and previous frame
+//                  tween(timeline[i], timeline[number], difference);
+//
+//                  console.log(tweenedFrames);
+//                  for (var j = 0; j < tweenedFrames[0].length; j++) {  //inner loop object data
+//
+//                      //redraw images to gifCanvas using standard canvas api
+//                      for (var f = 0; f < tweenedFrames.length; f++) {
+//                          var nx = tweenedFrames[f][j].x;
+//                          var ny = tweenedFrames[f][j].y;
+//                          var nWidth = tweenedFrames[f][j].width;
+//                          var nHeight = tweenedFrames[f][j].height;
+//                          var nRotation = tweenedFrames[f][j].rotation;
+//                          imgObj.src = tweenedFrames[f][j].src;
+//                          var visible = tweenedFrames[f][j].visible;
+//                          
+//                          if(visible){
+//                            ctx.save();
+//                            ctx.translate(x,y);
+//                            ctx
+//                            ctx.rotate(nRotation);
+//                            ctx.drawImage(imgObj, nx, ny, nWidth, nHeight);
+//                            
+//                            
+//                            
+//                          }
+//                      }
+//                      //encoder.addFrame(ctx, {delay:1000 / fps,copy: true});
+//                      ctx.clearRect(0, 0, 1000, 600);
+//                      ctx.drawImage(imageObj, 0, 0, 1000, 600);
+//                      
+//                            progress = ((j/fps))*100;
+//                            progress = parseInt(progress);
+//                            console.log(progress);
+//
+//              
+//                            $( "#progressbar" ).progressbar({
+//                                value: progress
+//                            });
+//                  }
+//              }
+//              // ctx.drawImage(imageObj,0,0,300,150);*/
+//              //retrieve data for images from timeline 2-dimensional array
+//              for (var index = 0; index < timeline[i].length; index++) {
+//
+//                  var x = timeline[i][index].x;
+//                  var y = timeline[i][index].y;
+//                  var width = timeline[i][index].width;
+//                  var height = timeline[i][index].height;
+//                  var rotation = timeline[i][index].rotation;
+//
+//                  var imgObj = new Image();
+//
+//                  imgObj.src = timeline[i][index].src;
+//                  if(timeline[i][index].visible){
+//                  ctx.rotate(rotation);
+//                  ctx.drawImage(imgObj, x, y, width, height);   //draw image to canvas
+//
+//                  }
+//              }
+//              
+//              //var image = convertCanvasToImage(gifCanvas);
 //              
 //              
 //              
 //              
-              
-              
-     $("#mov").css({ "background": "#E6E6E6" });
-     $("#mov").button("option", "label", "Create Animated MOV");
-     $("#overlay").css({ "display": "none" });
-     
-          }
-      }
-}
+//              
+////              
+////              
+////              
+////              
+//              
+//              
+//     $("#mov").css({ "background": "#E6E6E6" });
+//     $("#mov").button("option", "label", "Create Animated MOV");
+//     $("#overlay").css({ "display": "none" });
+//     
+//          }
+//      }
+//}
 
 function saveParents(parent, child, allImages) {
     
@@ -1068,8 +1113,15 @@ function saveParents(parent, child, allImages) {
      var parentLayer = allImages[parent].imageLayer.getLayer();
      var childLayer = allImages[child].imageLayer.getLayer();
      
-     var torsoLayer = allImages[0].imageLayer.getLayer();
-     var torsoGroup = torsoLayer.children[0];
+     for (var i = 0; i < allImages.length; i++){
+        if (allImages[i].imageName == "torso.png"){
+            var torsoLayer = allImages[i].imageLayer.getLayer();
+            var torsoGroup = torsoLayer.children[0];
+            break
+        } else {
+            console.log("ERROR: No Torso Layer");
+        }
+     }
      
      var parentGroup = parentLayer.children[0];
      var childGroup = childLayer.children[0];
@@ -1083,10 +1135,12 @@ function saveParents(parent, child, allImages) {
      //var layerId = allImages.length;
         
         
+        
      
         parentGroup.add(childGroup);
         
-        parentLayer.add(torsoGroup);
+        
+        childLayer.add(torsoGroup);
 
         
         childGroup.setPosition(childX, childY);
@@ -1106,8 +1160,8 @@ function saveParents(parent, child, allImages) {
         
         //childLayer.hide();
 
+
         parentLayer.draw();
-        
        
         
         console.log("Parent: " + parent + ", Child: " + child + " , parent name: " + parentName + ", child name: " + childName);
@@ -1148,53 +1202,65 @@ function saveParents(parent, child, allImages) {
 //                
 //            }
 //            
-//            for(var i = 0; i < checked.length; i++){
-//                   var pos = checked[i]-1;
-//                
-//                   var parentChecked = relationships[pos].pId;
-//                   var childChecked = relationships[pos].cId;
-//                
-//                   var childNameChecked = relationships[pos].cName;
-//                
-//                   var childLayerChecked = relationships[pos].cLayer.getLayer();
-//                   var childGroupChecked = childLayerChecked.children[0];
-//                   
-//                   var parentLayerChecked = relationships[0].pLayer.getLayer();
-//                   var parentGroupChecked = childLayerChecked.children[0];
-//                   var parentSrcChecked = allImages[0].imageLink;
-//                   
-////                   if (parentChecked == 0) {
-////                       var parentLayerChecked = relationships[pos].pLayer.getLayer();
-////                       var parentGroupChecked = parentLayerChecked.children[0];
-////                       
-////                       parentLayerChecked.moveToTop();
+////            for(var i = 0; i < checked.length; i++){
+////                   var pos = checked[i]-1;
+////                
+////                   var parentChecked = relationships[pos].pId;
+////                   var childChecked = relationships[pos].cId;
+////                
+////                   var childNameChecked = relationships[pos].cName;
+////                   var parentNameChecked = relationships[pos].pName;
+////                
+////                   var childLayerChecked = relationships[pos].cLayer.getLayer();
+////                   var childGroupChecked = childLayerChecked.children[0];
+////                   
+////                   
+////                   var parentLayerChecked = relationships[0].pLayer.getLayer();
+////                   var parentGroupChecked = childLayerChecked.children[0];
+////                   var parentSrcChecked = allImages[0].imageLink;
+////                   
+////                   if(parentNameChecked == "torso.png"){
+////                       parentLayerChecked.moveUp();
 ////                       parentGroupChecked.moveToTop();
+////                       break;
+////                   } else {
+////                       childLayerChecked.moveDown();
+////                       childGroupChecked.moveDown();
+////                   }
+////                   
+//////                   if (parentChecked == 0) {
+//////                       var parentLayerChecked = relationships[pos].pLayer.getLayer();
+//////                       var parentGroupChecked = parentLayerChecked.children[0];
+//////                       
+//////                       parentLayerChecked.moveToTop();
+//////                       parentGroupChecked.moveToTop();
+//////                       
+//////                   }
+////
+////                   //childLayerChecked.moveDown();
+////                   //childGroupChecked.moveDown();
+////
+////                   if(i == 0){
+////                       //parentGroupChecked.moveToTop();
+////                       //parentLayerChecked.moveToTop();
 ////                       
 ////                   }
-//
-//                   childLayerChecked.moveDown();
-//                   childGroupChecked.moveDown();
-//
-//                   if(i == 0){
-//                       parentGroupChecked.moveToTop();
-//                       parentLayerChecked.moveToTop();
-//                       
-//                   }
-//                                   
-//                   
-//                   
-//                   
-//                   
-//                }
-               alert("Image Inheritances Completed");
-            //}
+////                                   
+////                   
+////                   
+////                   
+////                   
+////                }
+//               
+//            }
             
         
         $("#inheritances").append("<li style='background-color:white;' >Parent: " + parentName + "<br />Child: " + childName + "</li><br />");
-        
+         
+         alert("Image Inheritances Completed");
       
-//      $("ul").append("<li onclick=\"visible(this.id)\" id=\"" + parent + "\" class=\"ui-state-default\">\n\
-//      <span class=\"ui-icon picture\"></span>" + "&nbsp;" + parentName + ", " + childName + "</li>");
+      $("ul").append("<li onclick=\"visible(this.id)\" id=\"" + parent + "\" class=\"ui-state-default\">\n\
+      <span class=\"ui-icon picture\"></span>" + "&nbsp;" + parentName + ", " + childName + "</li>");
      $("#saveParents").css({ "background": "#E6E6E6" });
     
 }
