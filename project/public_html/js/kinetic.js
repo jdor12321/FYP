@@ -48,19 +48,19 @@ $(document).ready(function () {
     $( "#progressbar" ).progressbar({
                 value: 0
     });
-    $('#mov').on('click', function () {
-        if (timeline.length > 0) {
-            $("#mov").css({ "background": "#008080" });
-            $("#mov").button("option", "label", "Creating animation...");
-            $("#overlay").css({ "display": "block" });
-            setTimeout(function () {
-                saveMov();
-            }, 1000);
-        }
-        else {
-            alert("Your animation doesn't have any keyframes, please set keyframes using the timeline.");
-        }
-    });
+//    $('#mov').on('click', function () {
+//        if (timeline.length > 0) {
+//            $("#mov").css({ "background": "#008080" });
+//            $("#mov").button("option", "label", "Creating animation...");
+//            $("#overlay").css({ "display": "block" });
+//            setTimeout(function () {
+//                saveMov();
+//            }, 1000);
+//        }
+//        else {
+//            alert("Your animation doesn't have any keyframes, please set keyframes using the timeline.");
+//        }
+//    });
     $('#up').on('click', function () {
         if (!confirm("Are you sure you want to reset your animation?")) {
             return;
@@ -261,15 +261,15 @@ function addImage(stage){
         layer.draw();
         group.setName(name);
         
-        
-        rotate.on("dragstart", function(){
-            var pos = rotate.getPosition();
-            console.log("start x: " + pos.x + " start y: " + pos.y + " ");
-        });
-        rotate.on("dragend", function(){
-            var pos = rotate.getPosition();
-            console.log("end x: " + pos.x + " end y: " + pos.y + " ");
-        });
+//        
+//        rotate.on("dragstart", function(){
+//            var pos = rotate.getPosition();
+//            console.log("start x: " + pos.x + " start y: " + pos.y + " ");
+//        });
+//        rotate.on("dragend", function(){
+//            var pos = rotate.getPosition();
+//            console.log("end x: " + pos.x + " end y: " + pos.y + " ");
+//        });
         
       
     }; 
@@ -431,7 +431,7 @@ function resetSortableIds(){
         
 
     
-    console.log(parentCount);
+    //console.log(parentCount);
 
 }
 
@@ -595,7 +595,7 @@ function storeTimeline(group){
             var src = allImages[i].imageLink;
             var visible = allImages[i].imageLayer.getVisible();
             
-            console.log(layer.children[0].getRotationDeg());
+           // console.log(layer.children[0].getRotationDeg());
             
             if(isNaN(layer.children[0].children[0].getAbsolutePosition().y)){
                 imageData= {
@@ -646,10 +646,10 @@ function storeTimeline(group){
 
 function tween(frames, oldFrames, difference){   //retrieve current keyframe, old keyframe and time difference between them for new frames
     var counter = 0;
-    var posIx = 0;
-    var posQx = 0;
-    var posIy = 0;
-    var posQy = 0;
+//    var posIx = 0;
+//    var posQx = 0;
+//    var posIy = 0;
+//    var posQy = 0;
     tweenedFrames = new Array();
      for (var i = 0; i < oldFrames.length; i++) {
         for (var q = 0; q < frames.length; q++) {  
@@ -666,11 +666,11 @@ function tween(frames, oldFrames, difference){   //retrieve current keyframe, ol
                 //get oldFrame rotation and next user sets rotation, then calculate the new rotation for first tweened frame
                 
                 var rotation = oldFrames[i].rotation;
-                console.log("OldFrame: " + rotation);
+               // console.log("OldFrame: " + rotation);
                 var nextRotation = frames[q].rotation;
-                console.log("NextFrame: " + nextRotation);
+               // console.log("NextFrame: " + nextRotation);
                 var newRotation = Math.round((rotation + ((nextRotation - rotation) / framesNeeded)));
-                console.log("newRotation: " + newRotation);
+                //console.log("newRotation: " + newRotation);
 
                 //get oldFrame x coord and next user set x coord, then calculate the new coord for first tweened frame
                 var x = oldFrames[i].x;
@@ -744,12 +744,14 @@ function tween(frames, oldFrames, difference){   //retrieve current keyframe, ol
 
 function saveGif(){
     
+    
+      //disable scrolling
       var scrollPosition = [
         self.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft,
         self.pageYOffset || document.documentElement.scrollTop  || document.body.scrollTop
       ];
     
-      var html = jQuery('html'); // it would make more sense to apply this to body, but IE7 won't have that
+      var html = jQuery('html');
       html.data('scroll-position', scrollPosition);
       html.data('previous-overflow', html.css('overflow'));
       html.css('overflow', 'hidden');
@@ -762,6 +764,7 @@ function saveGif(){
       }
       catch(e){
       	fps = 5;
+        console.log("FPS Error, Exception Thrown: " + e);
       }
       var imageObj = new Image();      
       
@@ -814,7 +817,7 @@ function saveGif(){
               if (i > 0) {  //call tweening on this and previous frame
                   tween(timeline[i], timeline[number], difference);
 
-                  console.log(tweenedFrames);
+                  //console.log(tweenedFrames);
                   for (var j = 0; j < tweenedFrames[0].length; j++) {  //inner loop object data
 
                       //redraw images to gifCanvas using standard canvas api
@@ -849,24 +852,24 @@ function saveGif(){
                             ctx.drawImage(imgObj, -offsetX, -offsetY, nWidth, nHeight);                        
                             ctx.restore();
                             
-                            for (var z = 0; z < objects.length; z++){
-                                console.log("length: " + objects.length + "z: " + z);
-                                if (z == 0) {
-                                    var torsoLayer = objects[z].getLayer();
-                                    var torsoGroup = torsoLayer.children[0];
-                                    if (torsoGroup.getName != 'torso.png') {
-                                        alert("You MUST import the torso image FIRST");
-                                        
-                                    }
-                                }else {
-                                    console.log(z + ": here");
-                                    var layer = objects[z].getLayer();
-                                    var layerGroup = layer.children[0].children[0];
-                                        
-                                    layerGroup.setRotationDeg(nRotation);
-                                    
-                            }
-                        }
+//                            for (var z = 0; z < objects.length; z++){
+//                                console.log("length: " + objects.length + "z: " + z);
+//                                if (z == 0) {
+//                                    var torsoLayer = objects[z].getLayer();
+//                                    var torsoGroup = torsoLayer.children[0];
+//                                    if (torsoGroup.getName != 'torso.png') {
+//                                        alert("You MUST import the torso image FIRST");
+//                                        
+//                                    }
+//                                }else {
+//                                    console.log(z + ": here");
+//                                    var layer = objects[z].getLayer();
+//                                    var layerGroup = layer.children[0].children[0];
+//                                        
+//                                    layerGroup.setRotationDeg(nRotation);
+//                                    
+//                            }
+//                        }
                          }
                       }
                       encoder.addFrame(ctx, {delay:1000 / fps,copy: true});
@@ -939,7 +942,7 @@ function saveGif(){
       window.scrollTo(scrollPosition[0], scrollPosition[1]);
             var d1 = new Date();
             startTime = d1.getTime();
-            console.log(startTime);
+           // console.log(startTime);
               
               $('#timeSec').text ("");
               $('#msg').text ("");
@@ -950,9 +953,8 @@ function saveGif(){
               var d2 = new Date();
               sec = d2.getTime();
               calc = (sec - startTime)/1000;
-              console.log(sec);
-              console.log(calc);
-              window.alert("Encoding finished in " + calc + " seconds.");
+             // console.log(sec);
+              //console.log(calc);
               $('#percent').text ("100% Complete.");
               $('#timeSec').text ("Encoding finished in " + calc + " seconds.");
               $('#msg').text ("Your animation will open in 5 seconds.");
@@ -961,6 +963,8 @@ function saveGif(){
               $("#gif").css({ "background": "#E6E6E6" });
               $("#gif").button("option", "label", "Create Animated GIF");
               $("#overlay").css({ "display": "none" }); 
+              
+              //enable scrolling
               var html = jQuery('html');
               var scrollPosition = html.data('scroll-position');
               html.css('overflow', html.data('previous-overflow'));
@@ -1119,7 +1123,7 @@ function saveParents(parent, child, allImages) {
             var torsoGroup = torsoLayer.children[0];
             break
         } else {
-            console.log("ERROR: No Torso Layer");
+           // console.log("ERROR: No Torso Layer");
         }
      }
      
@@ -1257,7 +1261,6 @@ function saveParents(parent, child, allImages) {
         
         $("#inheritances").append("<li style='background-color:white;' >Parent: " + parentName + "<br />Child: " + childName + "</li><br />");
          
-         alert("Image Inheritances Completed");
       
       $("ul").append("<li onclick=\"visible(this.id)\" id=\"" + parent + "\" class=\"ui-state-default\">\n\
       <span class=\"ui-icon picture\"></span>" + "&nbsp;" + parentName + ", " + childName + "</li>");
