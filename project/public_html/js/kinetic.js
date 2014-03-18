@@ -128,14 +128,31 @@ $(document).ready(function () {
             
             var parentLayerId = list.options[list.selectedIndex].value;
             var childLayerId = document.getElementById("parents").getElementsByTagName("li")[i].id;
-       
-            saveParents(parentLayerId, childLayerId, allImages); 
-        
-            if (allImages.length == count) {
-                alert('Parents Sucessfully added');
+            
+            if(parentLayerId == "noparent"){
+                //do nothing
+            } else {
+                saveParents(parentLayerId, childLayerId, allImages);
             }
-        
+       
+            console.log(allImages.length);
+            console.log(count);
+               
         }
+        //Gritter message as used in timetime notification. More tasteful than using an alert window.
+        $.extend($.gritter.options, {
+		    class_name: 'gritter-light', // for light notifications (can be added directly to $.gritter.add too)
+		    position: 'top-left', // possibilities: bottom-left, bottom-right, top-left, top-right
+                    fade_in_speed: 0, // how fast notifications fade in (string or int)
+                    fade_out_speed: 1000, // how fast the notices fade out
+                    time: 2000 // hang on the screen for...
+        });
+        $.gritter.add({
+                // (string | mandatory) the heading of the notification
+                title: 'Image Inheritance Complete',
+                // (string | mandatory) the text inside the notification
+                text: 'You have successfully created image inheritances as per your specification.'
+        });
         
     });
     
@@ -346,6 +363,8 @@ for (var i = 0; i < images.length; i++){
   var list = document.getElementsByClassName('layersList')[i];
   list.options[j] = new Option(images[j], j);
 }
+
+list.options[images.length] = new Option("No Parent", "noparent");
 }
   
 }
@@ -1109,6 +1128,7 @@ function saveGif(){
 function saveParents(parent, child, allImages) {
     
      if (parent == child){
+         alert("A parent and child element cannot be the same. Inheritance Ignored");
          return;
      }
      
